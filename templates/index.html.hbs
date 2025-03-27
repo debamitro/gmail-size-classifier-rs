@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Query Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .search-container {
+            margin-bottom: 20px;
+        }
+        .results {
+            list-style: none;
+            padding: 0;
+        }
+        .result-item {
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .loading {
+            display: none;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>API Query Interface</h1>
+    <div class="search-container">
+        <input type="text" id="maxMessages" placeholder="maximum messages">
+        <button onclick="performSearch()">Classify email</button>
+        <span id="loading" class="loading">Loading...</span>
+    </div>
+    <ul id="results" class="results">
+        <!-- Results will be inserted here -->
+    </ul>
+
+    <script>
+        function performSearch() {
+            const searchInput = document.getElementById('maxMessages');
+            const loading = document.getElementById('loading');
+            const results = document.getElementById('results');
+            
+            loading.style.display = 'inline';
+            results.innerHTML = '';
+            
+            fetch(`/api/summary?max=${encodeURIComponent(maxMessages.value)}`)
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    data.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'result-item';
+                        li.textContent = item.title;
+                        results.appendChild(li);
+                    });
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    console.error('Error:', error);
+                    results.innerHTML = '<li class="result-item">Error fetching results</li>';
+                });
+        }
+    </script>
+</body>
+</html>

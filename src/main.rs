@@ -2,14 +2,32 @@ use gpui::{
     div, px, rgb, size, App, AppContext, Application, Bounds, Context, InteractiveElement,
     IntoElement, MouseButton, ParentElement, Render, Styled, Window, WindowBounds, WindowOptions,
 };
-use rocket::{get, routes, Error};
+use rocket::{get, routes, Error, serde::json::Json};
+use rocket_dyn_templates::{Template, context};
+use serde::{Serialize, Deserialize};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use tokio;
 
+#[derive(Serialize)]
+struct SearchResult {
+    title: String,
+}
+
 #[get("/")]
-fn index() -> &'static str {
-    "Hello from Rocket!"
+fn index() -> Template {
+    Template::render("index", context! {})
+}
+
+#[get("/api/summary?<max>")]
+fn summary(max: String) -> Json<Vec<SearchResult>> {
+    // This is a mock implementation - replace with actual API call
+    let results = vec![
+        SearchResult { title: format!("Result 1 for: ") },
+        SearchResult { title: format!("Result 2 for: ") },
+        SearchResult { title: format!("Result 3 for: ") },
+    ];
+    Json(results)
 }
 
 struct AppState {
@@ -31,7 +49,12 @@ impl AppState {
         thread::spawn(move || {
             let rt = tokio::runtime::Runtime::new().unwrap();
             rt.block_on(async {
-                let rocket = rocket::build().mount("/", routes![index]).ignite().await.unwrap();
+                let rocket = rocket::build()
+                    .mount("/", routes![index, summary])
+                    .attach(Template::fairing())
+                    .ignite()
+                    .await
+                    .unwrap();
                 let shutdown = rocket.shutdown();
                 *server_handle.lock().unwrap() = Some(shutdown.clone());
                 let _ = rocket.launch().await;

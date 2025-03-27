@@ -7,5 +7,7 @@ edition = "2021"
 gpui = { git = "https://github.com/zed-industries/zed" }
 anyhow = "1.0"
 async-trait = "0.1"
-rocket = "0.5.0"
+rocket = { version = "0.5.0", features = ["json"] }
 tokio = { version = "1.0", features = ["full"] }
+rocket_dyn_templates = { version = "0.1.0", features = ["handlebars"] }
+serde = { version = "1.0", features = ["derive"] }
