@@ -2,16 +2,49 @@ use gpui::{
     div, px, rgb, size, App, AppContext, Application, Bounds, Context, InteractiveElement,
     IntoElement, MouseButton, ParentElement, Render, Styled, Window, WindowBounds, WindowOptions,
 };
-use rocket::{get, routes, Error, serde::json::Json};
+use rocket::{get, routes, Error, serde::json::Json, Config};
 use rocket_dyn_templates::{Template, context};
 use serde::{Serialize, Deserialize};
 use std::sync::{Arc, Mutex};
 use std::thread;
 use tokio;
+use google_gmail1::{Gmail, oauth2, hyper, hyper_rustls, 
+    Error as GmailError};
+use hyper::client::HttpConnector;
+use hyper_rustls::HttpsConnector;
 
 #[derive(Serialize)]
 struct SearchResult {
     title: String,
+    size: i32,
+}
+
+async fn setup_gmail_client() -> Result<Gmail<HttpsConnector<HttpConnector>>, GmailError> {
+    let secret = oauth2::read_application_secret("credentials.json")
+        .await
+        .expect("credentials.json not found");
+
+    let auth = oauth2::InstalledFlowAuthenticator::builder(
+        secret,
+        oauth2::InstalledFlowReturnMethod::HTTPRedirect,
+    )
+    .persist_tokens_to_disk("gmail_token.json")
+    .build()
+    .await?;
+
+    let hub = Gmail::new(
+        hyper::Client::builder().build(
+            hyper_rustls::HttpsConnectorBuilder::new()
+                .with_native_roots()
+                .unwrap()
+                .https_or_http()
+                .enable_http1()
+                .build(),
+        ),
+        auth,
+    );
+
+    Ok(hub)
 }
 
 #[get("/")]
@@ -20,14 +53,44 @@ fn index() -> Template {
 }
 
 #[get("/api/summary?<max>")]
-fn summary(max: String) -> Json<Vec<SearchResult>> {
-    // This is a mock implementation - replace with actual API call
-    let results = vec![
-        SearchResult { title: format!("Result 1 for: ") },
-        SearchResult { title: format!("Result 2 for: ") },
-        SearchResult { title: format!("Result 3 for: ") },
-    ];
-    Json(results)
+async fn summary(max: String) -> Json<Vec<SearchResult>> {
+    let max_results: u32 = max.parse().unwrap_or(10);
+    
+    // This would need to be passed from the AppState - for now using a new client
+    if let Ok(hub) = setup_gmail_client().await {
+        let result = hub
+            .users()
+            .messages_list("me")
+            .max_results(max_results)
+            .doit()
+            .await;
+
+        match result {
+            Ok((_, message_list)) => {
+                let mut results = Vec::new();
+                if let Some(messages) = message_list.messages {
+                    for message in messages {
+                        if let Some(id) = message.id {
+                            if let Ok((_, msg)) = hub.users().messages_get("me",&id).doit().await {
+                                let size = msg.size_estimate.unwrap_or(0);
+                                results.push(SearchResult {
+                                    title: msg.snippet.unwrap_or_else(|| "No subject".to_string()),
+                                    size,
+                                });
+                            }
+                        }
+                    }
+                }
+                Json(results)
+            }
+            Err(e) => {
+                eprintln!("Error fetching messages: {}", e);
+                Json(vec![])
+            }
+        }
+    } else {
+        Json(vec![])
+    }
 }
 
 struct AppState {
@@ -49,7 +112,10 @@ impl AppState {
         thread::spawn(move || {
             let rt = tokio::runtime::Runtime::new().unwrap();
             rt.block_on(async {
-                let rocket = rocket::build()
+                let config = Config {
+                    port: 5000,
+                    ..Config::debug_default()};
+                let rocket = rocket::custom(&config)
                     .mount("/", routes![index, summary])
                     .attach(Template::fairing())
                     .ignite()

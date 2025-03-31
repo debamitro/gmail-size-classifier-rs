@@ -11,3 +11,5 @@ rocket = { version = "0.5.0", features = ["json"] }
 tokio = { version = "1.0", features = ["full"] }
 rocket_dyn_templates = { version = "0.1.0", features = ["handlebars"] }
 serde = { version = "1.0", features = ["derive"] }
+google-gmail1 = "5.0"
+
