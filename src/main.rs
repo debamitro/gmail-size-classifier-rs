@@ -152,6 +152,7 @@ impl Render for AppState {
             .text_xl()
             .children([
                 div()
+                    .px_2()
                     .text_color(rgb(0xff0000))
                     .child(format!("{}", self.status)),
                 div().flex().gap_2().children([
@@ -183,6 +184,19 @@ impl Render for AppState {
                             }),
                         )
                         .child("stop"),
+                    div()
+                        .bg(rgb(0x4CAF50))
+                        .px_4()
+                        .py_2()
+                        .rounded_md()
+                        .cursor_pointer()
+                        .on_mouse_down(
+                            MouseButton::Left,
+                            cx.listener(|_, _event, _win, cx| {
+                                cx.quit();
+                            }),
+                        )
+                        .child("quit"),
                 ]),
             ])
     }
@@ -200,8 +214,5 @@ fn main() {
             |_, cx| cx.new(|_| AppState::new()),
         )
         .unwrap();
-        let _ = cx.on_window_closed(|cx: &mut App| {
-            cx.quit();
-        });
     });
 }
