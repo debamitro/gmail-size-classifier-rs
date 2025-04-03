@@ -8,6 +8,8 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use tokio;
 
+use crate::server::{index, summary};
+
 pub struct AppState {
     pub status: String,
     pub server_handle: Arc<Mutex<Option<rocket::Shutdown>>>,
@@ -32,7 +34,7 @@ impl AppState {
                     ..Config::debug_default()
                 };
                 let rocket = rocket::custom(&config)
-                    .mount("/", routes![crate::index, crate::summary])
+                    .mount("/", routes![index, summary])
                     .attach(Template::fairing())
                     .ignite()
                     .await
