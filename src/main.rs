@@ -1,7 +1,4 @@
-use gpui::{
-    div, px, rgb, size, App, AppContext, Application, Bounds, Context, InteractiveElement,
-    IntoElement, MouseButton, ParentElement, Render, Styled, Window, WindowBounds, WindowOptions,
-};
+use gpui::{px, size, App, AppContext, Application, Bounds, WindowBounds, WindowOptions};
 
 mod app;
 mod server;

@@ -8,7 +8,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use tokio;
 
-use crate::server::{index, summary};
+use crate::server::{index, oauth2_callback, summary, error, login, home};
 
 pub struct AppState {
     pub status: String,
@@ -34,7 +34,7 @@ impl AppState {
                     ..Config::debug_default()
                 };
                 let rocket = rocket::custom(&config)
-                    .mount("/", routes![index, summary])
+                    .mount("/", routes![index, summary, oauth2_callback, login, error, home])
                     .attach(Template::fairing())
                     .ignite()
                     .await
