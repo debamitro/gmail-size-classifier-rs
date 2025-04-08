@@ -20,6 +20,24 @@ struct TokenResponse {
     token_type: String,
 }
 
+
+#[derive(Deserialize)]
+struct CredentialsWeb {
+    client_id: String,
+    project_id: String,
+    auth_uri: String,
+    token_uri: String,
+    auth_provider_x509_cert_url: String,
+    client_secret: String,
+    redirect_uris: Vec<String>,
+    javascript_origins: Vec<String>
+}
+
+#[derive(Deserialize)]
+struct Credentials {
+    web: CredentialsWeb
+}
+
 #[get("/")]
 pub fn index(cookies: &CookieJar<'_>) -> Redirect {
     match cookies.get_private("token") {
@@ -47,18 +65,26 @@ pub fn home(cookies: &CookieJar<'_>) -> Template {
 pub fn login(cookies: &CookieJar<'_>) -> Redirect {
     cookies.remove_private("token");
     
-    let scope = urlencoding::encode("https://www.googleapis.com/auth/gmail.readonly");
-    let redirect_uri = urlencoding::encode("http://127.0.0.1:5000/oauth2callback");
-    let client_id = "";
-    
-    let auth_url = format!(
-        "https://accounts.google.com/o/oauth2/v2/auth?scope={}&redirect_uri={}&response_type=code&client_id={}", 
-        scope,
-        redirect_uri,
-        client_id
-    );
-    
-    Redirect::to(auth_url)
+    match serde_json::from_str::<Credentials>(&std::fs::read_to_string("credentials.json").unwrap()) {
+        Ok(credentials) => {
+            let scope = urlencoding::encode("https://www.googleapis.com/auth/gmail.readonly");
+            let redirect_uri = urlencoding::encode(&credentials.web.redirect_uris[0]);
+            let client_id = credentials.web.client_id;
+            
+            let auth_url = format!(
+                "https://accounts.google.com/o/oauth2/v2/auth?scope={}&redirect_uri={}&response_type=code&client_id={}", 
+                scope,
+                redirect_uri,
+                client_id
+            );
+            
+            Redirect::to(auth_url)
+                   
+        },
+        Err(_) => {
+            Redirect::to("/error")           
+        }
+    }
 }
 
 #[get("/oauth2callback?<code>&<state>&<scope>&<authuser>&<prompt>")]
@@ -70,52 +96,52 @@ pub async fn oauth2_callback(
     prompt: Option<String>,
     cookies: &CookieJar<'_>
 ) -> Redirect {
-    println!("OAuth2 callback received with params:");
-    println!("  code: {:?}", code);
-    println!("  state: {:?}", state);
-    println!("  scope: {:?}", scope);
-    println!("  authuser: {:?}", authuser);
-    println!("  prompt: {:?}", prompt);
-
     match code {
         Some(code) => {
-            let client = reqwest::Client::new();
-            let params = [
-                ("client_id", ""),
-                ("client_secret", ""),
-                ("code", &code),
-                ("grant_type", "authorization_code"),
-                ("redirect_uri", "http://127.0.0.1:5000/oauth2callback")
-            ];
-
-            match client.post("https://oauth2.googleapis.com/token")
-                .form(&params)
-                .send()
-                .await {
-                    Ok(response) => {
-                        if let Ok(text) = response.text().await {
-                            println!("Token response: {:?}", &text);
-                            match serde_json::from_str::<TokenResponse>(&text) {
-                                Ok(token_data) => {
-                                    // Store the access token in a cookie
-                                    cookies.add_private(Cookie::new("token", token_data.access_token));
-                                    Redirect::to("/")
-                                }
-                                Err(e) => {
-                                    println!("json parsing error: {}", e);
+            match serde_json::from_str::<Credentials>(&std::fs::read_to_string("credentials.json").unwrap()) {
+                Ok(credentials) => {
+                    let client = reqwest::Client::new();
+                    let params = [
+                        ("client_id", credentials.web.client_id.as_str()),
+                        ("client_secret", credentials.web.client_secret.as_str()),
+                        ("code", &code),
+                        ("grant_type", "authorization_code"),
+                        ("redirect_uri", &credentials.web.redirect_uris[0])
+                    ];
+        
+                    match client.post(&credentials.web.token_uri)
+                        .form(&params)
+                        .send()
+                        .await {
+                            Ok(response) => {
+                                if let Ok(text) = response.text().await {
+                                    println!("Token response: {:?}", &text);
+                                    match serde_json::from_str::<TokenResponse>(&text) {
+                                        Ok(token_data) => {
+                                            // Store the access token in a cookie
+                                            cookies.add_private(Cookie::new("token", token_data.access_token));
+                                            Redirect::to("/")
+                                        }
+                                        Err(e) => {
+                                            println!("json parsing error: {}", e);
+                                            Redirect::to("/error")
+                                        }
+                                    }
+                                } else {
+                                    println!("Failed to get response text");
                                     Redirect::to("/error")
                                 }
                             }
-                        } else {
-                            println!("Failed to get response text");
-                            Redirect::to("/error")
+                            Err(e) => {
+                                println!("token error: {}", e);
+                                Redirect::to("/error")
+                            }
                         }
-                    }
-                    Err(e) => {
-                        println!("token error: {}", e);
-                        Redirect::to("/error")
-                    }
+                        },
+                Err(_) => {
+                    Redirect::to("/error")           
                 }
+            }
         }
         None => {
             Redirect::to("/error")       
