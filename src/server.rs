@@ -10,6 +10,7 @@ use reqwest;
 pub struct SearchResult {
     title: String,
     size: i32,
+    thread_id: String
 }
 
 #[derive(Deserialize)]
@@ -188,11 +189,12 @@ struct MessagesList {
     resultSizeEstimate: Option<i32>,
 }
 
-async fn messages_list (token: &str, _max_results: u32) -> Result<Vec<MessageListEntry>, ()>{
+async fn messages_list (token: &str, max_results: u32) -> Result<Vec<MessageListEntry>, ()>{
     let client = reqwest::Client::new();
     let result = client
     .get("https://gmail.googleapis.com/gmail/v1/users/me/messages")
     .header("Authorization", format!("Bearer {}", token))
+    .query(&[("maxResults", max_results)])
     .send()
     .await;
     match result {
@@ -251,7 +253,8 @@ pub async fn summary(max: String, cookies: &CookieJar<'_>) -> Json<Vec<SearchRes
                         if let Ok(msg) = message_get (token.value(),&message.id).await {
                             results.push(SearchResult {
                                     title: msg.snippet,
-                                    size: msg.sizeEstimate
+                                    size: msg.sizeEstimate,
+                                    thread_id: msg.threadId
                             });
                         }
                     }

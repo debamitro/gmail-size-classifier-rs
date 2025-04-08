@@ -1,7 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>API Query Results</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Size Classifier</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -28,16 +32,41 @@
         }
     </style>
 </head>
-<body>
-    <h1>API Query Interface</h1>
-    <div class="search-container">
-        <input type="text" id="maxMessages" placeholder="maximum messages">
-        <button onclick="performSearch()">Classify email</button>
-        <span id="loading" class="loading">Loading...</span>
-    </div>
-    <ul id="results" class="results">
-        <!-- Results will be inserted here -->
-    </ul>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold text-center mb-8">Gmail Size Classifier</h1>
+        <div class="search-container text-center mb-6">
+            <input type="text" id="maxMessages" placeholder="maximum messages">
+            <button onclick="performSearch()">Classify email</button>
+            <span id="loading" class="loading">Loading...</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <canvas id="emailSizePieChart" height="300"></canvas>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-xl font-semibold mb-4">Size Classifications</h2>
+                <ul class="list-disc pl-6">
+                    <li><span class="font-medium">Small:</span> Less than 100KB</li>
+                    <li><span class="font-medium">Medium:</span> Between 100KB and 1MB</li>
+                    <li><span class="font-medium">Large:</span> 1MB or larger</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                       <div class="bg-white rounded-lg shadow-lg p-6">
+                            <h2 class="text-xl font-semibold mb-4">Emails</h2>
+                            <div class="mb-4 text-gray-600">
+                                <p>Count:</p>
+                                <p>Total size:</p>
+                            </div>
+                            <div class="space-y-3" id="results">
+
+                            </div>
+                       </div>
+        </div>
 
     <script>
         function performSearch() {
@@ -53,16 +82,27 @@
                 .then(data => {
                     loading.style.display = 'none';
                     data.forEach(item => {
-                        const li = document.createElement('li');
-                        li.className = 'result-item';
-                        li.textContent = item.title;
-                        results.appendChild(li);
+                        const div = document.createElement('div');
+                        div.className = 'border-b pb-2';
+                        const link = document.createElement('a');
+                        link.href = `https://mail.google.com/mail/u/0/#all/${item.thread_id}`;
+                        link.target = '_blank';
+                        const message_subject = document.createElement('p');
+                        message_subject.className = 'font-medium truncate';
+                        message_subject.textContent = item.title;
+                        link.appendChild(message_subject);
+                        const message_size = document.createElement('p');
+                        message_size.className = 'text-sm text-gray-600';
+                        message_size.textContent = `Size: ${item.size} KB`;
+                        div.appendChild(link);
+                        div.appendChild(message_size);
+                        results.appendChild(div);
                     });
                 })
                 .catch(error => {
                     loading.style.display = 'none';
                     console.error('Error:', error);
-                    results.innerHTML = '<li class="result-item">Error fetching results</li>';
+                    results.innerHTML = 'Error fetching results';
                 });
         }
     </script>
