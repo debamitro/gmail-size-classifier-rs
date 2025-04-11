@@ -1,16 +1,16 @@
+use reqwest;
 use rocket::http::{Cookie, CookieJar};
+use rocket::serde::json::serde_json;
 use rocket::{get, response::Redirect, serde::json::Json};
 use rocket_dyn_templates::{context, Template};
-use rocket::serde::json::serde_json;
 use serde::{Deserialize, Serialize};
 use urlencoding;
-use reqwest;
 
 #[derive(Serialize)]
 pub struct SearchResult {
     title: String,
     size: i32,
-    thread_id: String
+    thread_id: String,
 }
 
 #[derive(Deserialize)]
@@ -21,7 +21,6 @@ struct TokenResponse {
     token_type: String,
 }
 
-
 #[derive(Deserialize)]
 struct CredentialsWeb {
     client_id: String,
@@ -31,23 +30,19 @@ struct CredentialsWeb {
     auth_provider_x509_cert_url: String,
     client_secret: String,
     redirect_uris: Vec<String>,
-    javascript_origins: Vec<String>
+    javascript_origins: Vec<String>,
 }
 
 #[derive(Deserialize)]
 struct Credentials {
-    web: CredentialsWeb
+    web: CredentialsWeb,
 }
 
 #[get("/")]
 pub fn index(cookies: &CookieJar<'_>) -> Redirect {
     match cookies.get_private("token") {
-        Some(_cookie) => {
-            Redirect::to("/home")
-        }
-        None => {
-            Redirect::to("/login")
-        }
+        Some(_cookie) => Redirect::to("/home"),
+        None => Redirect::to("/login"),
     }
 }
 
@@ -55,36 +50,37 @@ pub fn index(cookies: &CookieJar<'_>) -> Redirect {
 pub fn home(cookies: &CookieJar<'_>) -> Template {
     match cookies.get_private("token") {
         Some(_cookie) => Template::render("index", &context! {}),
-        None => Template::render("/error", context! { 
-            error: "Not logged in",
-            redirect: "/login"
-        }),
+        None => Template::render(
+            "/error",
+            context! {
+                error: "Not logged in",
+                redirect: "/login"
+            },
+        ),
     }
 }
 
 #[get("/login")]
 pub fn login(cookies: &CookieJar<'_>) -> Redirect {
     cookies.remove_private("token");
-    
-    match serde_json::from_str::<Credentials>(&std::fs::read_to_string("credentials.json").unwrap()) {
+
+    match serde_json::from_str::<Credentials>(&std::fs::read_to_string("credentials.json").unwrap())
+    {
         Ok(credentials) => {
             let scope = urlencoding::encode("https://www.googleapis.com/auth/gmail.readonly");
             let redirect_uri = urlencoding::encode(&credentials.web.redirect_uris[0]);
             let client_id = credentials.web.client_id;
-            
+
             let auth_url = format!(
                 "https://accounts.google.com/o/oauth2/v2/auth?scope={}&redirect_uri={}&response_type=code&client_id={}", 
                 scope,
                 redirect_uri,
                 client_id
             );
-            
+
             Redirect::to(auth_url)
-                   
-        },
-        Err(_) => {
-            Redirect::to("/error")           
         }
+        Err(_) => Redirect::to("/error"),
     }
 }
 
@@ -95,11 +91,13 @@ pub async fn oauth2_callback(
     scope: Option<String>,
     authuser: Option<String>,
     prompt: Option<String>,
-    cookies: &CookieJar<'_>
+    cookies: &CookieJar<'_>,
 ) -> Redirect {
     match code {
         Some(code) => {
-            match serde_json::from_str::<Credentials>(&std::fs::read_to_string("credentials.json").unwrap()) {
+            match serde_json::from_str::<Credentials>(
+                &std::fs::read_to_string("credentials.json").unwrap(),
+            ) {
                 Ok(credentials) => {
                     let client = reqwest::Client::new();
                     let params = [
@@ -107,79 +105,83 @@ pub async fn oauth2_callback(
                         ("client_secret", credentials.web.client_secret.as_str()),
                         ("code", &code),
                         ("grant_type", "authorization_code"),
-                        ("redirect_uri", &credentials.web.redirect_uris[0])
+                        ("redirect_uri", &credentials.web.redirect_uris[0]),
                     ];
-        
-                    match client.post(&credentials.web.token_uri)
+
+                    match client
+                        .post(&credentials.web.token_uri)
                         .form(&params)
                         .send()
-                        .await {
-                            Ok(response) => {
-                                if let Ok(text) = response.text().await {
-                                    println!("Token response: {:?}", &text);
-                                    match serde_json::from_str::<TokenResponse>(&text) {
-                                        Ok(token_data) => {
-                                            // Store the access token in a cookie
-                                            cookies.add_private(Cookie::new("token", token_data.access_token));
-                                            Redirect::to("/")
-                                        }
-                                        Err(e) => {
-                                            println!("json parsing error: {}", e);
-                                            Redirect::to("/error")
-                                        }
+                        .await
+                    {
+                        Ok(response) => {
+                            if let Ok(text) = response.text().await {
+                                println!("Token response: {:?}", &text);
+                                match serde_json::from_str::<TokenResponse>(&text) {
+                                    Ok(token_data) => {
+                                        // Store the access token in a cookie
+                                        cookies.add_private(Cookie::new(
+                                            "token",
+                                            token_data.access_token,
+                                        ));
+                                        Redirect::to("/")
                                     }
-                                } else {
-                                    println!("Failed to get response text");
-                                    Redirect::to("/error")
+                                    Err(e) => {
+                                        println!("json parsing error: {}", e);
+                                        Redirect::to("/error")
+                                    }
                                 }
-                            }
-                            Err(e) => {
-                                println!("token error: {}", e);
+                            } else {
+                                println!("Failed to get response text");
                                 Redirect::to("/error")
                             }
                         }
-                        },
-                Err(_) => {
-                    Redirect::to("/error")           
+                        Err(e) => {
+                            println!("token error: {}", e);
+                            Redirect::to("/error")
+                        }
+                    }
                 }
+                Err(_) => Redirect::to("/error"),
             }
         }
-        None => {
-            Redirect::to("/error")       
-        }
+        None => Redirect::to("/error"),
     }
 }
 
 #[get("/error")]
 pub fn error() -> Template {
-    Template::render("error", context! { 
-        error: "Not logged in",
-        redirect: "/login"
-    })
+    Template::render(
+        "error",
+        context! {
+            error: "Not logged in",
+            redirect: "/login"
+        },
+    )
 }
 
 #[derive(Deserialize)]
 struct MessagePart {
-    partId: String
+    partId: String,
 }
 
 #[derive(Deserialize)]
 struct Message {
-    id : String,
-    threadId : String,
-    labelIds : Vec<String>,
-    snippet : String,
-    historyId : String,
+    id: String,
+    threadId: String,
+    labelIds: Vec<String>,
+    snippet: String,
+    historyId: String,
     internalDate: String,
     payload: Option<MessagePart>,
     sizeEstimate: i32,
-    raw: Option<String>
+    raw: Option<String>,
 }
 
 #[derive(Deserialize)]
 struct MessageListEntry {
     id: String,
-    threadId: String
+    threadId: String,
 }
 
 #[derive(Deserialize)]
@@ -189,24 +191,20 @@ struct MessagesList {
     resultSizeEstimate: Option<i32>,
 }
 
-async fn messages_list (token: &str, max_results: u32) -> Result<Vec<MessageListEntry>, ()>{
+async fn messages_list(token: &str, max_results: u32) -> Result<Vec<MessageListEntry>, ()> {
     let client = reqwest::Client::new();
     let result = client
-    .get("https://gmail.googleapis.com/gmail/v1/users/me/messages")
-    .header("Authorization", format!("Bearer {}", token))
-    .query(&[("maxResults", max_results)])
-    .send()
-    .await;
+        .get("https://gmail.googleapis.com/gmail/v1/users/me/messages")
+        .header("Authorization", format!("Bearer {}", token))
+        .query(&[("maxResults", max_results)])
+        .send()
+        .await;
     match result {
-        Ok(response) => {
-            match response.json::<MessagesList>().await {
-                Ok(message_list) => {
-                    Ok(message_list.messages)
-                },
-                Err(e) => {
-                    println!("json parsing error: {}", e);
-                    Err(())
-                }
+        Ok(response) => match response.json::<MessagesList>().await {
+            Ok(message_list) => Ok(message_list.messages),
+            Err(e) => {
+                println!("json parsing error: {}", e);
+                Err(())
             }
         },
         Err(e) => {
@@ -215,10 +213,13 @@ async fn messages_list (token: &str, max_results: u32) -> Result<Vec<MessageList
         }
     }
 }
-async fn message_get (token: &str, id: &str) -> Result<Message, ()> {
+async fn message_get(token: &str, id: &str) -> Result<Message, ()> {
     let client = reqwest::Client::new();
     let result = client
-        .get(format!("https://gmail.googleapis.com/gmail/v1/users/me/messages/{}", id))
+        .get(format!(
+            "https://gmail.googleapis.com/gmail/v1/users/me/messages/{}",
+            id
+        ))
         .header("Authorization", format!("Bearer {}", token))
         .send()
         .await;
@@ -234,9 +235,7 @@ async fn message_get (token: &str, id: &str) -> Result<Message, ()> {
                 Err(())
             }
         }
-        Err(_) => {
-            Err(())
-        }
+        Err(_) => Err(()),
     }
 }
 
@@ -245,28 +244,24 @@ pub async fn summary(max: String, cookies: &CookieJar<'_>) -> Json<Vec<SearchRes
     match cookies.get_private("token") {
         Some(token) => {
             let max_results: u32 = max.parse().unwrap_or(10);
-            
-            match messages_list (token.value(), max_results).await {
+
+            match messages_list(token.value(), max_results).await {
                 Ok(messages) => {
                     let mut results = Vec::new();
                     for message in messages {
-                        if let Ok(msg) = message_get (token.value(),&message.id).await {
+                        if let Ok(msg) = message_get(token.value(), &message.id).await {
                             results.push(SearchResult {
-                                    title: msg.snippet,
-                                    size: msg.sizeEstimate,
-                                    thread_id: msg.threadId
+                                title: msg.snippet,
+                                size: msg.sizeEstimate,
+                                thread_id: msg.threadId,
                             });
                         }
                     }
                     Json(results)
-                },
-                Err(_) => {
-                    Json(vec![])
                 }
+                Err(_) => Json(vec![]),
             }
-        },
-        None => {
-            Json(vec![])
         }
+        None => Json(vec![]),
     }
 }

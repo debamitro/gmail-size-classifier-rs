@@ -8,7 +8,7 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use tokio;
 
-use crate::server::{index, oauth2_callback, summary, error, login, home};
+use crate::server::{error, home, index, login, oauth2_callback, summary};
 
 pub struct AppState {
     pub status: String,
@@ -34,7 +34,10 @@ impl AppState {
                     ..Config::debug_default()
                 };
                 let rocket = rocket::custom(&config)
-                    .mount("/", routes![index, summary, oauth2_callback, login, error, home])
+                    .mount(
+                        "/",
+                        routes![index, summary, oauth2_callback, login, error, home],
+                    )
                     .attach(Template::fairing())
                     .ignite()
                     .await
@@ -102,19 +105,6 @@ impl Render for AppState {
                             }),
                         )
                         .child("stop"),
-                    div()
-                        .bg(rgb(0x4CAF50))
-                        .px_4()
-                        .py_2()
-                        .rounded_md()
-                        .cursor_pointer()
-                        .on_mouse_down(
-                            MouseButton::Left,
-                            cx.listener(|_, _event, _win, cx| {
-                                cx.quit();
-                            }),
-                        )
-                        .child("quit"),
                 ]),
             ])
     }
