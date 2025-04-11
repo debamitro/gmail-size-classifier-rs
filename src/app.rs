@@ -88,6 +88,7 @@ impl Render for AppState {
                             cx.listener(|this, _event, _win, cx| {
                                 this.start();
                                 cx.notify();
+                                cx.open_url("http://127.0.0.1:5000/");
                             }),
                         )
                         .child("start"),
