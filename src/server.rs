@@ -1,5 +1,5 @@
 use reqwest;
-use rocket::http::{Cookie, CookieJar};
+use rocket::http::{Cookie, CookieJar, SameSite};
 use rocket::serde::json::serde_json;
 use rocket::{get, response::Redirect, serde::json::Json};
 use rocket_dyn_templates::{context, Template};
@@ -51,7 +51,7 @@ pub fn home(cookies: &CookieJar<'_>) -> Template {
     match cookies.get_private("token") {
         Some(_cookie) => Template::render("index", &context! {}),
         None => Template::render(
-            "/error",
+            "error",
             context! {
                 error: "Not logged in",
                 redirect: "/login"
@@ -119,12 +119,10 @@ pub async fn oauth2_callback(
                                 println!("Token response: {:?}", &text);
                                 match serde_json::from_str::<TokenResponse>(&text) {
                                     Ok(token_data) => {
-                                        // Store the access token in a cookie
-                                        cookies.add_private(Cookie::new(
-                                            "token",
-                                            token_data.access_token,
-                                        ));
-                                        Redirect::to("/")
+                                        let cookie = Cookie::build(("token", token_data.access_token))
+                                        .same_site(SameSite::Lax);
+                                        cookies.add_private(cookie);
+                                        Redirect::to("/home")
                                     }
                                     Err(e) => {
                                         println!("json parsing error: {}", e);
