@@ -13,6 +13,11 @@ pub struct SearchResult {
     thread_id: String,
 }
 
+#[derive(Serialize)]
+pub struct User {
+    email: String,
+}
+
 #[derive(Deserialize)]
 struct TokenResponse {
     access_token: String,
@@ -36,6 +41,14 @@ struct CredentialsWeb {
 #[derive(Deserialize)]
 struct Credentials {
     web: CredentialsWeb,
+}
+
+#[derive(Deserialize)]
+struct Profile {
+    emailAddress: String,
+    messagesTotal: i32,
+    threadsTotal: i32,
+    historyId: String,
 }
 
 #[get("/")]
@@ -119,8 +132,9 @@ pub async fn oauth2_callback(
                                 println!("Token response: {:?}", &text);
                                 match serde_json::from_str::<TokenResponse>(&text) {
                                     Ok(token_data) => {
-                                        let cookie = Cookie::build(("token", token_data.access_token))
-                                        .same_site(SameSite::Lax);
+                                        let cookie =
+                                            Cookie::build(("token", token_data.access_token))
+                                                .same_site(SameSite::Lax);
                                         cookies.add_private(cookie);
                                         Redirect::to("/home")
                                     }
@@ -261,5 +275,41 @@ pub async fn summary(max: String, cookies: &CookieJar<'_>) -> Json<Vec<SearchRes
             }
         }
         None => Json(vec![]),
+    }
+}
+
+async fn user_get(token: &str) -> Result<User, ()> {
+    let client = reqwest::Client::new();
+    let result = client
+        .get("https://gmail.googleapis.com/gmail/v1/users/me/profile")
+        .header("Authorization", format!("Bearer {}", token))
+        .send()
+        .await;
+    match result {
+        Ok(response) => {
+            if let Ok(profile) = response.json::<Profile>().await {
+                Ok(User {
+                    email: profile.emailAddress,
+                })
+            } else {
+                Err(())
+            }
+        }
+        Err(_) => Err(()),
+    }
+}
+
+#[get("/api/profile")]
+pub async fn profile(cookies: &CookieJar<'_>) -> Json<User> {
+    match cookies.get_private("token") {
+        Some(token) => match user_get(token.value()).await {
+            Ok(user) => Json(user),
+            Err(_) => Json(User {
+                email: String::new(),
+            }),
+        },
+        None => Json(User {
+            email: String::new(),
+        }),
     }
 }
