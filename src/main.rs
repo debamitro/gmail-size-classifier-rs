@@ -3,8 +3,10 @@ use gpui::{
     WindowBounds, WindowOptions,
 };
 
+mod about;
 mod app;
 mod server;
+use about::AboutWindow;
 use app::AppState;
 
 fn main() {
@@ -13,11 +15,15 @@ fn main() {
         cx.activate(true);
         cx.bind_keys(vec![KeyBinding::new("cmd-q", Quit, None)]);
         cx.on_action(quit);
+        cx.on_action(about);
         cx.set_menus(vec![Menu {
             name: "set_menus".into(),
-            items: vec![MenuItem::action("Quit", Quit)],
+            items: vec![
+                MenuItem::action("About", About),
+                MenuItem::action("Quit", Quit),
+            ],
         }]);
-        let bounds = Bounds::centered(None, size(px(300.0), px(200.0)), cx);
+        let bounds = Bounds::centered(None, size(px(800.0), px(600.0)), cx);
         cx.open_window(
             WindowOptions {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
@@ -29,8 +35,23 @@ fn main() {
     });
 }
 
-actions!(set_menus, [Quit]);
+actions!(set_menus, [Quit, About]);
 
 fn quit(_: &Quit, cx: &mut App) {
     cx.quit();
+}
+
+fn about(_: &About, cx: &mut App) {
+    cx.open_window(
+        WindowOptions {
+            window_bounds: Some(WindowBounds::Windowed(Bounds::centered(
+                None,
+                size(px(600.0), px(600.0)),
+                cx,
+            ))),
+            ..Default::default()
+        },
+        |_, cx| cx.new(|_| AboutWindow {}),
+    )
+    .unwrap();
 }

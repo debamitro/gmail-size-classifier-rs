@@ -18,7 +18,7 @@ pub struct AppState {
 impl AppState {
     pub fn new() -> Self {
         Self {
-            status: "press start to begin".to_string(),
+            status: "Idle".to_string(),
             server_handle: Arc::new(Mutex::new(None)),
         }
     }
@@ -47,7 +47,7 @@ impl AppState {
                 let _ = rocket.launch().await;
             });
         });
-        self.status = "started at http://127.0.0.1:5000".to_string();
+        self.status = "Serving at http://127.0.0.1:5000".to_string();
     }
 
     pub fn stop(&mut self) {
@@ -64,49 +64,36 @@ impl AppState {
 impl Render for AppState {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         div()
+            .bg(rgb(0xffffff))
             .flex()
             .flex_col()
             .gap_3()
-            .size(px(300.0))
+            .w_full()
+            .h_full()
             .justify_center()
-            .items_center()
-            .text_xl()
+            .px_2()
             .children([
+                div().justify_center().text_xl().child("Gmail Cleaner"),
+                div().flex().gap_2().children([div()
+                    .bg(rgb(0x4CAF50))
+                    .px_4()
+                    .py_2()
+                    .rounded_md()
+                    .cursor_pointer()
+                    .on_mouse_down(
+                        MouseButton::Left,
+                        cx.listener(|this, _event, _win, cx| {
+                            this.start();
+                            cx.notify();
+                            cx.open_url("http://127.0.0.1:5000/");
+                        }),
+                    )
+                    .child("start")]),
                 div()
                     .px_2()
                     .text_color(rgb(0xff0000))
+                    .text_sm()
                     .child(format!("{}", self.status)),
-                div().flex().gap_2().children([
-                    div()
-                        .bg(rgb(0x4CAF50))
-                        .px_4()
-                        .py_2()
-                        .rounded_md()
-                        .cursor_pointer()
-                        .on_mouse_down(
-                            MouseButton::Left,
-                            cx.listener(|this, _event, _win, cx| {
-                                this.start();
-                                cx.notify();
-                                cx.open_url("http://127.0.0.1:5000/");
-                            }),
-                        )
-                        .child("start"),
-                    div()
-                        .bg(rgb(0x4CAF50))
-                        .px_4()
-                        .py_2()
-                        .rounded_md()
-                        .cursor_pointer()
-                        .on_mouse_down(
-                            MouseButton::Left,
-                            cx.listener(|this, _event, _win, cx| {
-                                this.stop();
-                                cx.notify();
-                            }),
-                        )
-                        .child("stop"),
-                ]),
             ])
     }
 }
