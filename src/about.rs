@@ -3,8 +3,8 @@ use gpui::{div, rgb, Context, IntoElement, ParentElement, Render, Styled, Window
 pub struct AboutWindow {}
 
 impl Render for AboutWindow {
-    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let aboutText =
+    fn render(&mut self, _window: &mut Window, _cx: &mut Context<Self>) -> impl IntoElement {
+        let about_text =
         "Gmail Cleaner is a desktop app which helps you find out which emails are taking up storage space
         in your Gmail account. This app runs on your desktop and does not send your email to any server.
         Therefore it is the most secure way of cleaning up your Gmail account. You don't need to give any permissions
@@ -22,7 +22,7 @@ impl Render for AboutWindow {
             .children([
                 div().text_xl().child("About Gmail Cleaner"),
                 div().child("Version 0.1.0"),
-                div().h_1_2().flex_initial().child(aboutText),
+                div().h_1_2().flex_initial().child(about_text),
             ])
     }
 }

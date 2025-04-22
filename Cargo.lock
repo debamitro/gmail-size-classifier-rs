@@ -1934,6 +1934,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "gmail-cleaner-rs"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "gpui",
+ "reqwest",
+ "rocket",
+ "rocket_dyn_templates",
+ "serde",
+ "tokio",
+ "urlencoding",
+]
+
+[[package]]
 name = "gpu-alloc"
 version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4436,21 +4451,6 @@ dependencies = [
  "globset",
  "sha2",
  "walkdir",
-]
-
-[[package]]
-name = "rust-gpui-app"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "async-trait",
- "gpui",
- "reqwest",
- "rocket",
- "rocket_dyn_templates",
- "serde",
- "tokio",
- "urlencoding",
 ]
 
 [[package]]

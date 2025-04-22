@@ -1,5 +1,5 @@
 use gpui::{
-    div, px, rgb, size, Context, InteractiveElement, IntoElement, MouseButton, ParentElement,
+    div, rgb, Context, InteractiveElement, IntoElement, MouseButton, ParentElement,
     Render, Styled, Window,
 };
 use rocket::{routes, Config};

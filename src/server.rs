@@ -76,8 +76,8 @@ pub fn home(cookies: &CookieJar<'_>) -> Template {
 #[get("/login")]
 pub fn login(cookies: &CookieJar<'_>) -> Redirect {
     cookies.remove_private("token");
-
-    match serde_json::from_str::<Credentials>(&std::fs::read_to_string("credentials.json").unwrap())
+    let credentials_file = include_str!("../credentials.json");
+    match serde_json::from_str::<Credentials>(credentials_file)
     {
         Ok(credentials) => {
             let scope = urlencoding::encode("https://www.googleapis.com/auth/gmail.readonly");
@@ -97,20 +97,19 @@ pub fn login(cookies: &CookieJar<'_>) -> Redirect {
     }
 }
 
-#[get("/oauth2callback?<code>&<state>&<scope>&<authuser>&<prompt>")]
+#[get("/oauth2callback?<code>&<_state>&<scope>&<_authuser>&<_prompt>")]
 pub async fn oauth2_callback(
     code: Option<String>,
-    state: Option<String>,
+    _state: Option<String>,
     scope: Option<String>,
-    authuser: Option<String>,
-    prompt: Option<String>,
+    _authuser: Option<String>,
+    _prompt: Option<String>,
     cookies: &CookieJar<'_>,
 ) -> Redirect {
     match code {
         Some(code) => {
-            match serde_json::from_str::<Credentials>(
-                &std::fs::read_to_string("credentials.json").unwrap(),
-            ) {
+            let credentials_file = include_str!("../credentials.json");
+            match serde_json::from_str::<Credentials>(credentials_file) {
                 Ok(credentials) => {
                     let client = reqwest::Client::new();
                     let params = [
