@@ -172,8 +172,26 @@ pub fn error() -> Template {
 }
 
 #[derive(Deserialize)]
+struct MessageHeader {
+    name: String,
+    value: String
+}
+
+#[derive(Deserialize)]
+struct MessagePartBody {
+    size: i32,
+    data: Option<String>,
+    attachmentId: Option<String>
+}
+
+#[derive(Deserialize)]
 struct MessagePart {
     partId: String,
+    mimeType: String,
+    filename: String,
+    headers: Vec<MessageHeader>,
+    body: MessagePartBody,
+    parts: Option<Vec<MessagePart>>
 }
 
 #[derive(Deserialize)]
@@ -240,6 +258,7 @@ async fn message_get(token: &str, id: &str) -> Result<Message, ()> {
                 if let Ok(message) = serde_json::from_str(&body) {
                     Ok(message)
                 } else {
+                    println!("json parsing error: {}", &body);
                     Err(())
                 }
             } else {
@@ -262,7 +281,7 @@ pub async fn summary(max: String, cookies: &CookieJar<'_>) -> Json<Vec<SearchRes
                     for message in messages {
                         if let Ok(msg) = message_get(token.value(), &message.id).await {
                             results.push(SearchResult {
-                                title: msg.snippet,
+                                title: msg.payload.unwrap().headers.into_iter().find(|h| h.name == "Subject").unwrap().value,
                                 size: msg.sizeEstimate,
                                 thread_id: msg.threadId,
                             });
