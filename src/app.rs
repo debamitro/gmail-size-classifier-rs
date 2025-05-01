@@ -1,6 +1,6 @@
 use gpui::{
-    div, rgb, Context, InteractiveElement, IntoElement, MouseButton, ParentElement,
-    Render, Styled, Window,
+    div, rgb, Context, Hsla, InteractiveElement, IntoElement, MouseButton, ParentElement, Render,
+    Styled, Window,
 };
 use rocket::{routes, Config};
 use rocket_dyn_templates::Template;
@@ -47,7 +47,7 @@ impl AppState {
                 let _ = rocket.launch().await;
             });
         });
-        self.status = "Serving at http://127.0.0.1:5000".to_string();
+        self.status = "Open http://127.0.0.1:5000 in your web browser".to_string();
     }
 
     pub fn stop(&mut self) {
@@ -70,14 +70,14 @@ impl Render for AppState {
             .gap_3()
             .w_full()
             .h_full()
-            .justify_center()
             .px_2()
             .children([
-                div().justify_center().text_xl().child("Gmail Cleaner"),
-                div().flex().gap_2().children([div()
+                div().text_center().text_3xl().child("Gmail Cleaner"),
+                div().justify_center().children([div()
                     .bg(rgb(0x4CAF50))
                     .px_4()
                     .py_2()
+                    .w_48()
                     .rounded_md()
                     .cursor_pointer()
                     .on_mouse_down(
@@ -88,10 +88,14 @@ impl Render for AppState {
                             cx.open_url("http://127.0.0.1:5000/");
                         }),
                     )
+                    .text_center()
                     .child("start")]),
                 div()
+                    .border_t_1()
+                    .border_color(Hsla::black())
+                    .bg(rgb(0xe0e0e0))
                     .px_2()
-                    .text_color(rgb(0xff0000))
+                    .text_color(rgb(0x000000))
                     .text_sm()
                     .child(format!("{}", self.status)),
             ])

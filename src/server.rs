@@ -77,8 +77,7 @@ pub fn home(cookies: &CookieJar<'_>) -> Template {
 pub fn login(cookies: &CookieJar<'_>) -> Redirect {
     cookies.remove_private("token");
     let credentials_file = include_str!("../credentials.json");
-    match serde_json::from_str::<Credentials>(credentials_file)
-    {
+    match serde_json::from_str::<Credentials>(credentials_file) {
         Ok(credentials) => {
             let scope = urlencoding::encode("https://www.googleapis.com/auth/gmail.readonly");
             let redirect_uri = urlencoding::encode(&credentials.web.redirect_uris[0]);
@@ -174,14 +173,14 @@ pub fn error() -> Template {
 #[derive(Deserialize)]
 struct MessageHeader {
     name: String,
-    value: String
+    value: String,
 }
 
 #[derive(Deserialize)]
 struct MessagePartBody {
     size: i32,
     data: Option<String>,
-    attachmentId: Option<String>
+    attachmentId: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -191,7 +190,7 @@ struct MessagePart {
     filename: String,
     headers: Vec<MessageHeader>,
     body: MessagePartBody,
-    parts: Option<Vec<MessagePart>>
+    parts: Option<Vec<MessagePart>>,
 }
 
 #[derive(Deserialize)]
@@ -281,7 +280,14 @@ pub async fn summary(max: String, cookies: &CookieJar<'_>) -> Json<Vec<SearchRes
                     for message in messages {
                         if let Ok(msg) = message_get(token.value(), &message.id).await {
                             results.push(SearchResult {
-                                title: msg.payload.unwrap().headers.into_iter().find(|h| h.name == "Subject").unwrap().value,
+                                title: msg
+                                    .payload
+                                    .unwrap()
+                                    .headers
+                                    .into_iter()
+                                    .find(|h| h.name == "Subject")
+                                    .unwrap()
+                                    .value,
                                 size: msg.sizeEstimate,
                                 thread_id: msg.threadId,
                             });

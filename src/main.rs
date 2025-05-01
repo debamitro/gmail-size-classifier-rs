@@ -1,6 +1,6 @@
 use gpui::{
     actions, px, size, App, AppContext, Application, Bounds, KeyBinding, Menu, MenuItem,
-    WindowBounds, WindowOptions, SharedString, TitlebarOptions
+    SharedString, TitlebarOptions, WindowBounds, WindowOptions,
 };
 
 mod about;
@@ -22,11 +22,11 @@ fn main() {
                 MenuItem::action("Quit", Quit),
             ],
         }]);
-        let bounds = Bounds::centered(None, size(px(800.0), px(600.0)), cx);
+        let bounds = Bounds::centered(None, size(px(400.0), px(160.0)), cx);
         cx.open_window(
             WindowOptions {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
-                titlebar: Some(TitlebarOptions{
+                titlebar: Some(TitlebarOptions {
                     title: Some(SharedString::new_static("Gmail Cleaner")),
                     ..Default::default()
                 }),
@@ -49,7 +49,7 @@ fn about(_: &About, cx: &mut App) {
         WindowOptions {
             window_bounds: Some(WindowBounds::Windowed(Bounds::centered(
                 None,
-                size(px(600.0), px(600.0)),
+                size(px(600.0), px(400.0)),
                 cx,
             ))),
             ..Default::default()
