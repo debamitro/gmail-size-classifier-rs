@@ -20,7 +20,7 @@ The app does not read your email or cannot modify your Gmail account in any way.
             .px_2()
             .children([
                 div().text_3xl().text_center().child("About Gmail Cleaner"),
-                div().text_center().child("Version 0.1.0"),
+                div().text_center().child("Version 0.1.0-beta"),
                 div()
                     .border_t_1()
                     .border_color(Hsla::black())

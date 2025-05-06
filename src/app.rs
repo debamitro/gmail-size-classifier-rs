@@ -6,7 +6,7 @@ use rocket::{routes, Config};
 use rocket_dyn_templates::Template;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
-use std::thread;
+use std::{thread, time};
 use tokio;
 
 use crate::server::{error, home, index, login, oauth2_callback, profile, summary};
@@ -75,7 +75,6 @@ impl AppState {
         let server_handle = self.server_handle.clone();
         let templates_dir = self.templates_dir.clone();
         let status = self.status.clone();
-        println!("Templates dir: {}", &templates_dir.as_str());
         // Start Rocket in a separate thread
         thread::spawn(move || {
             let rt = tokio::runtime::Runtime::new().unwrap();
@@ -140,6 +139,9 @@ impl Render for AppState {
                         MouseButton::Left,
                         cx.listener(|this, _event, _win, cx| {
                             this.start();
+                            thread::sleep(time::Duration::from_secs(5));
+                            *this.status.lock().unwrap() =
+                                "Open http://127.0.0.1:5000 in your web browser".to_string();
                             cx.notify();
                             cx.open_url("http://127.0.0.1:5000/");
                         }),
