@@ -1,4 +1,4 @@
-use gpui::{div, rgb, Context, IntoElement, ParentElement, Render, Styled, Window, Hsla};
+use gpui::{div, rgb, Context, Hsla, IntoElement, ParentElement, Render, Styled, Window};
 
 pub struct AboutWindow {}
 
@@ -21,7 +21,12 @@ The app does not read your email or cannot modify your Gmail account in any way.
             .children([
                 div().text_3xl().text_center().child("About Gmail Cleaner"),
                 div().text_center().child("Version 0.1.0"),
-                div().border_t_1().border_color(Hsla::black()).h_1_2().flex_initial().child(about_text),
+                div()
+                    .border_t_1()
+                    .border_color(Hsla::black())
+                    .h_1_2()
+                    .flex_initial()
+                    .child(about_text),
             ])
     }
 }
