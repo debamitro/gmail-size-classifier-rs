@@ -81,7 +81,8 @@ impl AppState {
             rt.block_on(async {
                 let figment = Config::figment()
                     .merge(("port", 5000))
-                    .merge(("template_dir", templates_dir.as_str()));
+                    .merge(("template_dir", templates_dir.as_str()))
+                    .merge(("secret_key", include_str!("../rocket_secret_key")));
                 let rocket = rocket::custom(figment)
                     .mount(
                         "/",

@@ -127,7 +127,6 @@ pub async fn oauth2_callback(
                     {
                         Ok(response) => {
                             if let Ok(text) = response.text().await {
-                                println!("Token response: {:?}", &text);
                                 match serde_json::from_str::<TokenResponse>(&text) {
                                     Ok(token_data) => {
                                         let cookie =
@@ -137,7 +136,6 @@ pub async fn oauth2_callback(
                                         Redirect::to("/home")
                                     }
                                     Err(e) => {
-                                        println!("json parsing error: {}", e);
                                         Redirect::to("/error")
                                     }
                                 }
@@ -257,7 +255,6 @@ async fn message_get(token: &str, id: &str) -> Result<Message, ()> {
                 if let Ok(message) = serde_json::from_str(&body) {
                     Ok(message)
                 } else {
-                    println!("json parsing error: {}", &body);
                     Err(())
                 }
             } else {
