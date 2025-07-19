@@ -2,12 +2,16 @@
 name = "gmail-cleaner-rs"
 version = "0.1.0"
 edition = "2021"
+build = "build.rs"
 
 [package.metadata.bundle]
 name = "Gmail Cleaner"
 identifier = "com.home.gmail-cleaner-rs"
 resources = ["templates"]
 category = "public.app-category.productivity"
+
+[build-dependencies]
+embed-manifest = "1.4.0"
 
 [dependencies]
 gpui = { git = "https://github.com/zed-industries/zed" }
