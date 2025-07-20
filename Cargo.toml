@@ -14,12 +14,15 @@ category = "public.app-category.productivity"
 embed-manifest = "1.4.0"
 
 [dependencies]
-gpui = { git = "https://github.com/zed-industries/zed" }
+iced = "0.10"
+iced_native = "0.10"
+tokio = { version = "1.0", features = ["full", "rt-multi-thread"] }
 anyhow = "1.0"
 async-trait = "0.1"
 rocket = { version = "0.5.0", features = ["json", "secrets"] }
-tokio = { version = "1.0", features = ["full"] }
+
 rocket_dyn_templates = { version = "0.1.0", features = ["handlebars"] }
 serde = { version = "1.0", features = ["derive"] }
 urlencoding = "2.1.3"
 reqwest = { version = "0.11", features = ["json"] }
+open = "5.0"

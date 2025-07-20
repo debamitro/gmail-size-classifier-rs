@@ -1,12 +1,8 @@
-use gpui::{
-    div, rgb, Context, Hsla, InteractiveElement, IntoElement, MouseButton, ParentElement, Render,
-    Styled, Window,
-};
 use rocket::{routes, Config};
 use rocket_dyn_templates::Template;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
-use std::{thread, time};
+use std::thread;
 use tokio;
 
 use crate::server::{error, home, index, login, oauth2_callback, profile, summary};
@@ -113,50 +109,10 @@ impl AppState {
                 shutdown.notify();
             });
         }
-        //self.status = "press start to begin".to_string();
+        *self.status.lock().unwrap() = "Server stopped".to_string();
     }
-}
 
-impl Render for AppState {
-    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        div()
-            .bg(rgb(0xffffff))
-            .flex()
-            .flex_col()
-            .gap_3()
-            .w_full()
-            .h_full()
-            .px_2()
-            .children([
-                div().text_center().text_3xl().child("Gmail Cleaner"),
-                div().justify_center().children([div()
-                    .bg(rgb(0x4CAF50))
-                    .px_4()
-                    .py_2()
-                    .w_48()
-                    .rounded_md()
-                    .cursor_pointer()
-                    .on_mouse_down(
-                        MouseButton::Left,
-                        cx.listener(|this, _event, _win, cx| {
-                            this.start();
-                            thread::sleep(time::Duration::from_secs(5));
-                            *this.status.lock().unwrap() =
-                                "Open http://127.0.0.1:5000 in your web browser".to_string();
-                            cx.notify();
-                            cx.open_url("http://127.0.0.1:5000/");
-                        }),
-                    )
-                    .text_center()
-                    .child("start")]),
-                div()
-                    .border_t_1()
-                    .border_color(Hsla::black())
-                    .bg(rgb(0xe0e0e0))
-                    .px_2()
-                    .text_color(rgb(0x000000))
-                    .text_sm()
-                    .child(format!("{}", self.status.lock().unwrap().as_str())),
-            ])
+    pub fn get_status(&self) -> String {
+        self.status.lock().unwrap().clone()
     }
 }
