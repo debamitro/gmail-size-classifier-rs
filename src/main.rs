@@ -74,12 +74,18 @@ impl Application for GmailCleanerApp {
 
     fn view(&self) -> Element<Self::Message> {
         let status = self.app_state.get_status();
-        
+        let about_text =
+        "Gmail Cleaner is a desktop app which helps you find out which emails are taking up storage space \
+in your Gmail account. This app runs on your desktop and does not send your email to any server. \
+Therefore it is the most secure way of cleaning up your Gmail account. You don't need to give any permissions \
+to this app, neither do you need to provide credentials. When you start it, a browser window opens up \
+with Gmail's login page. Once Gmail authorizes you the app visually shows you what you can delete. \
+The app does not read your email or cannot modify your Gmail account in any way.";
         let content = if self.show_about {
             column![
                 text("Gmail Cleaner").size(24),
-                text("A tool to help clean up your Gmail inbox").size(14),
-                text("Version 0.1.0").size(12),
+                text("Version 0.1.0-beta").size(12),
+                text(about_text).size(14),
                 button("Back").on_press(Message::ShowAbout),
             ]
             .spacing(10)
@@ -87,12 +93,9 @@ impl Application for GmailCleanerApp {
         } else {
             column![
                 text("Gmail Cleaner").size(24),
-                button("Start Server")
+                button("start")
                     .on_press(Message::StartServer)
                     .style(iced::theme::Button::Primary),
-                button("Stop Server")
-                    .on_press(Message::StopServer)
-                    .style(iced::theme::Button::Secondary),
                 button("About")
                     .on_press(Message::ShowAbout)
                     .style(iced::theme::Button::Text),
