@@ -135,9 +135,7 @@ pub async fn oauth2_callback(
                                         cookies.add_private(cookie);
                                         Redirect::to("/home")
                                     }
-                                    Err(e) => {
-                                        Redirect::to("/error")
-                                    }
+                                    Err(e) => Redirect::to("/error"),
                                 }
                             } else {
                                 println!("Failed to get response text");

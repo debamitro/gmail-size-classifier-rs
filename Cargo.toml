@@ -4,6 +4,11 @@ version = "0.1.0"
 edition = "2021"
 build = "build.rs"
 
+[features]
+default = ["iced_ui"]
+iced_ui = []
+gpui_ui = []
+
 [package.metadata.bundle]
 name = "Gmail Cleaner"
 identifier = "com.home.gmail-cleaner-rs"
