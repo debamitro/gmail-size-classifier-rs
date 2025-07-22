@@ -7,11 +7,7 @@ use gpui::{
 #[cfg(feature = "iced_ui")]
 use iced::{Application, Command, Element, Settings, Theme};
 
-#[cfg(feature = "gpui_ui")]
-mod about;
-
-#[cfg(feature = "gpui_ui")]
-use about::AboutWindow;
+use native_dialog::{MessageDialog, MessageType};
 
 #[cfg(feature = "gpui_ui")]
 mod app_gpui_ui;
@@ -74,16 +70,12 @@ fn quit(_: &Quit, cx: &mut App) {
 
 #[cfg(feature = "gpui_ui")]
 fn about(_: &About, cx: &mut App) {
-    cx.open_window(
-        WindowOptions {
-            window_bounds: Some(WindowBounds::Windowed(Bounds::centered(
-                None,
-                size(px(600.0), px(400.0)),
-                cx,
-            ))),
-            ..Default::default()
-        },
-        |_, cx| cx.new(|_| AboutWindow {}),
-    )
-    .unwrap();
+    // Show about dialog in a separate system window
+    let about_text = "Gmail Cleaner is a desktop app which helps you find out which emails are taking up storage space in your Gmail account. This app runs on your desktop and does not send your email to any server. Therefore it is the most secure way of cleaning up your Gmail account. You don't need to give any permissions to this app, neither do you need to provide credentials. When you start it, a browser window opens up with Gmail's login page. Once Gmail authorizes you the app visually shows you what you can delete. The app does not read your email or cannot modify your Gmail account in any way.";
+
+    let _ = MessageDialog::new()
+        .set_type(MessageType::Info)
+        .set_title("About Gmail Cleaner")
+        .set_text(&format!("Gmail Cleaner v0.1.0-beta\n\n{}", about_text))
+        .show_alert();
 }
