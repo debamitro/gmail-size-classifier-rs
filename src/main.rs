@@ -5,9 +5,7 @@ use gpui::{
 };
 
 #[cfg(feature = "iced_ui")]
-use iced::{Application, Command, Element, Settings, Theme};
-
-use native_dialog::{MessageDialog, MessageType};
+use iced::{run, Application, Element, Settings, Theme};
 
 #[cfg(feature = "gpui_ui")]
 mod app_gpui_ui;
@@ -20,14 +18,13 @@ mod app_iced_ui;
 
 #[cfg(feature = "iced_ui")]
 fn main() -> iced::Result {
-    app_iced_ui::GmailCleanerApp::run(Settings {
-        window: iced::window::Settings {
-            size: (400, 200),
-            resizable: true,
-            ..Default::default()
-        },
-        ..Default::default()
-    })
+    iced::application("Gmail Cleaner", app_iced_ui::update, app_iced_ui::view)
+        .window(iced::window::Settings {
+                size: (400.0, 200.0).into(),
+                resizable: true,
+                ..Default::default()
+            })
+        .run()
 }
 
 #[cfg(feature = "gpui_ui")]
