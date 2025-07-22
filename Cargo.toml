@@ -5,7 +5,7 @@ edition = "2021"
 build = "build.rs"
 
 [features]
-default = ["iced_ui"]
+default = []
 iced_ui = []
 gpui_ui = []
 
@@ -19,6 +19,7 @@ category = "public.app-category.productivity"
 embed-manifest = "1.4.0"
 
 [dependencies]
+gpui = { git = "https://github.com/zed-industries/zed", tag = "v0.194.3" }
 iced = "0.10"
 iced_native = "0.10"
 tokio = { version = "1.0", features = ["full", "rt-multi-thread"] }
