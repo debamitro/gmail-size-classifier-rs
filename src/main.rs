@@ -2,6 +2,7 @@ use iced::{
     widget::{button, column, container, text},
     Application, Command, Element, Settings, Theme,
 };
+use native_dialog::{MessageDialog, MessageType};
 
 mod app;
 mod server;
@@ -27,7 +28,6 @@ pub enum Message {
 
 struct GmailCleanerApp {
     app_state: AppState,
-    show_about: bool,
 }
 
 impl Application for GmailCleanerApp {
@@ -40,7 +40,6 @@ impl Application for GmailCleanerApp {
         (
             GmailCleanerApp {
                 app_state: AppState::new(),
-                show_about: false,
             },
             Command::none(),
         )
@@ -66,7 +65,14 @@ impl Application for GmailCleanerApp {
                 self.app_state.stop();
             }
             Message::ShowAbout => {
-                self.show_about = !self.show_about;
+                // Show about dialog in a separate system window
+                let about_text = "Gmail Cleaner is a desktop app which helps you find out which emails are taking up storage space in your Gmail account. This app runs on your desktop and does not send your email to any server. Therefore it is the most secure way of cleaning up your Gmail account. You don't need to give any permissions to this app, neither do you need to provide credentials. When you start it, a browser window opens up with Gmail's login page. Once Gmail authorizes you the app visually shows you what you can delete. The app does not read your email or cannot modify your Gmail account in any way.";
+                
+                let _ = MessageDialog::new()
+                    .set_type(MessageType::Info)
+                    .set_title("About Gmail Cleaner")
+                    .set_text(&format!("Gmail Cleaner v0.1.0-beta\n\n{}", about_text))
+                    .show_alert();
             }
         }
         Command::none()
@@ -74,36 +80,18 @@ impl Application for GmailCleanerApp {
 
     fn view(&self) -> Element<Self::Message> {
         let status = self.app_state.get_status();
-        let about_text =
-        "Gmail Cleaner is a desktop app which helps you find out which emails are taking up storage space \
-in your Gmail account. This app runs on your desktop and does not send your email to any server. \
-Therefore it is the most secure way of cleaning up your Gmail account. You don't need to give any permissions \
-to this app, neither do you need to provide credentials. When you start it, a browser window opens up \
-with Gmail's login page. Once Gmail authorizes you the app visually shows you what you can delete. \
-The app does not read your email or cannot modify your Gmail account in any way.";
-        let content = if self.show_about {
-            column![
-                text("Gmail Cleaner").size(24),
-                text("Version 0.1.0-beta").size(12),
-                text(about_text).size(14),
-                button("Back").on_press(Message::ShowAbout),
-            ]
-            .spacing(10)
-            .align_items(iced::Alignment::Center)
-        } else {
-            column![
-                text("Gmail Cleaner").size(24),
-                button("start")
-                    .on_press(Message::StartServer)
-                    .style(iced::theme::Button::Primary),
-                button("About")
-                    .on_press(Message::ShowAbout)
-                    .style(iced::theme::Button::Text),
-                text(&status).size(12),
-            ]
-            .spacing(10)
-            .align_items(iced::Alignment::Center)
-        };
+        let content = column![
+            text("Gmail Cleaner").size(24),
+            button("start")
+                .on_press(Message::StartServer)
+                .style(iced::theme::Button::Primary),
+            button("About")
+                .on_press(Message::ShowAbout)
+                .style(iced::theme::Button::Text),
+            text(&status).size(12),
+        ]
+        .spacing(10)
+        .align_items(iced::Alignment::Center);
 
         container(content)
             .width(iced::Length::Fill)
