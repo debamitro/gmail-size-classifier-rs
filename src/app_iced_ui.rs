@@ -1,6 +1,6 @@
-use crate::AppState;
+use crate::app::AppState;
 use iced::{
-    widget::{button, column, container, text},
+    widget::{button, column, container, horizontal_rule, row, text},
     Application, Command, Element, Settings, Theme,
 };
 use native_dialog::{MessageDialog, MessageType};
@@ -67,17 +67,24 @@ impl Application for GmailCleanerApp {
     fn view(&self) -> Element<Self::Message> {
         let status = self.app_state.get_status();
         let content = column![
-            text("Gmail Cleaner").size(24),
+            row![
+                text("Gmail Cleaner").size(28),
+                container(
+                    button("About")
+                        .on_press(Message::ShowAbout)
+                        .style(iced::theme::Button::Text)
+                )
+                .width(iced::Length::Fill)
+                .align_x(iced::alignment::Horizontal::Right)
+            ],
             button("start")
                 .on_press(Message::StartServer)
                 .style(iced::theme::Button::Primary),
-            button("About")
-                .on_press(Message::ShowAbout)
-                .style(iced::theme::Button::Text),
+            horizontal_rule(2),
             text(&status).size(12),
         ]
         .spacing(10)
-        .align_items(iced::Alignment::Center);
+        .padding(10);
 
         container(content)
             .width(iced::Length::Fill)
