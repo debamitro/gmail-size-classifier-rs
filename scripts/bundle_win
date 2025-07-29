@@ -4,7 +4,7 @@ mkdir tmp.$$
 cp target/x86_64-pc-windows-gnu/release/gmail-cleaner-rs.exe tmp.$$
 cp -r templates tmp.$$
 cd tmp.$$
-zip -r ../gmail_cleaner_0.1_beta_win.zip *
+zip -r ../gmail_cleaner_0.2_beta_win.zip *
 cd ..
 rm -rf tmp.$$
 
