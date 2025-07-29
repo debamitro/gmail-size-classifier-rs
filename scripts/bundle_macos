@@ -1,0 +1,29 @@
+#!/bin/bash
+
+[[ -n "$CERTIFICATE" ]] || exit
+
+# 1 Bundle
+cargo bundle --release --features iced_ui
+
+# 2 Codesign
+codesign --options runtime --force -s ${CERTIFICATE} target/release/bundle/osx/Gmail\ Cleaner.app
+
+# 3 Create dmg
+mkdir tmp.$$
+mkdir tmp.$$/Gmail\ Cleaner
+cp -r target/release/bundle/osx/Gmail\ Cleaner.app tmp.$$/Gmail\ Cleaner
+hdiutil create -verbose -srcfolder tmp.$$/Gmail\ Cleaner -format UDZO -ov ./gmail_cleaner_0.2_beta.dmg
+rm -fr tmp.$$
+
+# 4 Codesign the dmg
+codesign -s ${CERTIFICATE} ./gmail_cleaner_0.2_beta.dmg 
+
+[[ -n "$APPLE_ID" ]] || exit
+[[ -n "$APP_PASSWORD" ]] || exit
+[[ -n "$TEAM_ID" ]] || exit
+
+# 5 Submit for notarization
+xcrun notarytool submit ./gmail_cleaner_0.2_beta.dmg --wait --apple-id ${APPLE_ID} --password ${APP_PASSWORD} --team-id ${TEAM_ID}
+
+# 6 Staple the dmg
+xcrun stapler staple ./gmail_cleaner_0.2_beta.dmg
