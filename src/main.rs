@@ -19,6 +19,7 @@ mod app_iced_ui;
 #[cfg(feature = "iced_ui")]
 fn main() -> iced::Result {
     iced::application("Gmail Cleaner", app_iced_ui::update, app_iced_ui::view)
+        .subscription(app_iced_ui::subscription)
         .window(iced::window::Settings {
                 size: (400.0, 200.0).into(),
                 resizable: true,

@@ -115,4 +115,8 @@ impl AppState {
     pub fn get_status(&self) -> String {
         self.status.lock().unwrap().clone()
     }
+
+    pub fn is_running(&self) -> bool {
+        self.server_handle.lock().unwrap().is_some()
+    }
 }

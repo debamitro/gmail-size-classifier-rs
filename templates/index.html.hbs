@@ -293,9 +293,9 @@
                             labels: ['Small (<100KB)', 'Medium (100KB-1MB)', 'Large (>1MB)'],
                             datasets: [{
                                 data: [
-                                    categories.small.length,
-                                    categories.medium.length,
-                                    categories.large.length
+                                    categories.small.reduce((prev, curr) => prev + curr.size, 0) / 1024,
+                                    categories.medium.reduce((prev, curr) => prev + curr.size, 0) / 1024,
+                                    categories.large.reduce((prev, curr) => prev + curr.size, 0) / 1024
                                 ],
                                 backgroundColor: ['#4CAF50', '#FFC107', '#F44336']
                             }]
