@@ -16,6 +16,8 @@ category = "public.app-category.productivity"
 
 [build-dependencies]
 embed-manifest = "1.4.0"
+swc = "44.0.0"
+swc_common = "=16.0.0"
 
 [dependencies]
 gpui = { git = "https://github.com/zed-industries/zed", tag = "v0.194.3", optional = true }

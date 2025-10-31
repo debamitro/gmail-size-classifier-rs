@@ -1,3 +1,4 @@
+// @ts-nocheck
 function formatSize(sizeInB) {
     const sizeInKB = sizeInB / 1024;
     if (sizeInKB >= 1024) {
