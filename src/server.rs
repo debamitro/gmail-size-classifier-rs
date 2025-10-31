@@ -1,9 +1,11 @@
+use handlebars::Handlebars;
 use reqwest;
 use rocket::http::{Cookie, CookieJar, SameSite};
+use rocket::response::content::RawHtml;
 use rocket::serde::json::serde_json;
-use rocket::{get, response::Redirect, serde::json::Json};
-use rocket_dyn_templates::{context, Template};
+use rocket::{get, response::Redirect, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
+use serde_json::json;
 use urlencoding;
 
 #[derive(Serialize)]
@@ -60,16 +62,26 @@ pub fn index(cookies: &CookieJar<'_>) -> Redirect {
 }
 
 #[get("/home")]
-pub fn home(cookies: &CookieJar<'_>) -> Template {
+pub fn home(cookies: &CookieJar<'_>, hbs: &State<Handlebars<'static>>) -> RawHtml<String> {
     match cookies.get_private("token") {
-        Some(_cookie) => Template::render("index", &context! {}),
-        None => Template::render(
-            "error",
-            context! {
-                error: "Not logged in",
-                redirect: "/login"
-            },
-        ),
+        Some(_cookie) => {
+            let html = hbs.render("index", &json!({})).unwrap_or_else(|e| {
+                format!("Template error: {}", e)
+            });
+            RawHtml(html)
+        }
+        None => {
+            let html = hbs
+                .render(
+                    "error",
+                    &json!({
+                        "error": "Not logged in",
+                        "redirect": "/login"
+                    }),
+                )
+                .unwrap_or_else(|e| format!("Template error: {}", e));
+            RawHtml(html)
+        }
     }
 }
 
@@ -156,14 +168,17 @@ pub async fn oauth2_callback(
 }
 
 #[get("/error")]
-pub fn error() -> Template {
-    Template::render(
-        "error",
-        context! {
-            error: "Not logged in",
-            redirect: "/login"
-        },
-    )
+pub fn error(hbs: &State<Handlebars<'static>>) -> RawHtml<String> {
+    let html = hbs
+        .render(
+            "error",
+            &json!({
+                "error": "Not logged in",
+                "redirect": "/login"
+            }),
+        )
+        .unwrap_or_else(|e| format!("Template error: {}", e));
+    RawHtml(html)
 }
 
 #[derive(Deserialize)]
