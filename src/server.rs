@@ -1,7 +1,7 @@
 use handlebars::Handlebars;
 use reqwest;
 use rocket::http::{Cookie, CookieJar, SameSite};
-use rocket::response::content::RawHtml;
+use rocket::response::content::{RawHtml, RawJavaScript};
 use rocket::serde::json::serde_json;
 use rocket::{get, response::Redirect, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
@@ -83,6 +83,12 @@ pub fn home(cookies: &CookieJar<'_>, hbs: &State<Handlebars<'static>>) -> RawHtm
             RawHtml(html)
         }
     }
+}
+
+#[get("/js/script.js")]
+pub fn script() -> RawJavaScript<String> {
+    let js = include_str!("../static/js/script.js");
+    RawJavaScript(js.to_string())
 }
 
 #[get("/login")]
@@ -244,7 +250,7 @@ async fn messages_list(token: &str, max_results: u32) -> Result<Vec<MessageListE
             Err(e) => {
                 println!("json parsing error: {}", e);
                 Err(())
-            }
+        }
         },
         Err(e) => {
             println!("request error: {}", e);
