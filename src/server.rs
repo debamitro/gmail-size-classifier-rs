@@ -7,17 +7,13 @@ use rocket::{get, response::Redirect, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use urlencoding;
+use crate::gmail_client::*;
 
 #[derive(Serialize)]
 pub struct SearchResult {
     title: String,
     size: i32,
     thread_id: String,
-}
-
-#[derive(Serialize)]
-pub struct User {
-    email: String,
 }
 
 #[derive(Deserialize)]
@@ -43,14 +39,6 @@ struct CredentialsWeb {
 #[derive(Deserialize)]
 struct Credentials {
     web: CredentialsWeb,
-}
-
-#[derive(Deserialize)]
-struct Profile {
-    emailAddress: String,
-    messagesTotal: i32,
-    threadsTotal: i32,
-    historyId: String,
 }
 
 #[get("/")]
@@ -187,103 +175,6 @@ pub fn error(hbs: &State<Handlebars<'static>>) -> RawHtml<String> {
     RawHtml(html)
 }
 
-#[derive(Deserialize)]
-struct MessageHeader {
-    name: String,
-    value: String,
-}
-
-#[derive(Deserialize)]
-struct MessagePartBody {
-    size: i32,
-    data: Option<String>,
-    attachmentId: Option<String>,
-}
-
-#[derive(Deserialize)]
-struct MessagePart {
-    partId: String,
-    mimeType: String,
-    filename: String,
-    headers: Vec<MessageHeader>,
-    body: MessagePartBody,
-    parts: Option<Vec<MessagePart>>,
-}
-
-#[derive(Deserialize)]
-struct Message {
-    id: String,
-    threadId: String,
-    labelIds: Vec<String>,
-    snippet: String,
-    historyId: String,
-    internalDate: String,
-    payload: Option<MessagePart>,
-    sizeEstimate: i32,
-    raw: Option<String>,
-}
-
-#[derive(Deserialize)]
-struct MessageListEntry {
-    id: String,
-    threadId: String,
-}
-
-#[derive(Deserialize)]
-struct MessagesList {
-    messages: Vec<MessageListEntry>,
-    nextPageToken: Option<String>,
-    resultSizeEstimate: Option<i32>,
-}
-
-async fn messages_list(token: &str, max_results: u32) -> Result<Vec<MessageListEntry>, ()> {
-    let client = reqwest::Client::new();
-    let result = client
-        .get("https://gmail.googleapis.com/gmail/v1/users/me/messages")
-        .header("Authorization", format!("Bearer {}", token))
-        .query(&[("maxResults", max_results)])
-        .send()
-        .await;
-    match result {
-        Ok(response) => match response.json::<MessagesList>().await {
-            Ok(message_list) => Ok(message_list.messages),
-            Err(e) => {
-                println!("json parsing error: {}", e);
-                Err(())
-        }
-        },
-        Err(e) => {
-            println!("request error: {}", e);
-            Err(())
-        }
-    }
-}
-async fn message_get(token: &str, id: &str) -> Result<Message, ()> {
-    let client = reqwest::Client::new();
-    let result = client
-        .get(format!(
-            "https://gmail.googleapis.com/gmail/v1/users/me/messages/{}",
-            id
-        ))
-        .header("Authorization", format!("Bearer {}", token))
-        .send()
-        .await;
-    match result {
-        Ok(response) => {
-            if let Ok(body) = response.text().await {
-                if let Ok(message) = serde_json::from_str(&body) {
-                    Ok(message)
-                } else {
-                    Err(())
-                }
-            } else {
-                Err(())
-            }
-        }
-        Err(_) => Err(()),
-    }
-}
-
 #[get("/api/summary?<max>")]
 pub async fn summary(max: String, cookies: &CookieJar<'_>) -> Json<Vec<SearchResult>> {
     match cookies.get_private("token") {
@@ -315,27 +206,6 @@ pub async fn summary(max: String, cookies: &CookieJar<'_>) -> Json<Vec<SearchRes
             }
         }
         None => Json(vec![]),
-    }
-}
-
-async fn user_get(token: &str) -> Result<User, ()> {
-    let client = reqwest::Client::new();
-    let result = client
-        .get("https://gmail.googleapis.com/gmail/v1/users/me/profile")
-        .header("Authorization", format!("Bearer {}", token))
-        .send()
-        .await;
-    match result {
-        Ok(response) => {
-            if let Ok(profile) = response.json::<Profile>().await {
-                Ok(User {
-                    email: profile.emailAddress,
-                })
-            } else {
-                Err(())
-            }
-        }
-        Err(_) => Err(()),
     }
 }
 

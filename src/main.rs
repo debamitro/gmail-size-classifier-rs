@@ -12,6 +12,7 @@ mod app_gpui_ui;
 
 mod app;
 mod server;
+mod gmail_client;
 
 #[cfg(feature = "iced_ui")]
 mod app_iced_ui;
