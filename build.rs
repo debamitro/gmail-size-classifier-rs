@@ -72,14 +72,6 @@ fn minify_javascript() {
 }
 
 fn compile_typescript() {
-    let ts_file = "static/js/script.ts";
-
-    // Check if TypeScript file exists
-    if !std::path::Path::new(ts_file).exists() {
-        println!("cargo:warning=TypeScript file {} not found, skipping compilation", ts_file);
-        return;
-    }
-
     // Run TypeScript compiler using tsconfig.json
     match Command::new("tsc")
         .args(&["--project", "."])

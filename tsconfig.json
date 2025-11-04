@@ -9,6 +9,6 @@
     "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "static/js/script.ts"
+    "web/src/*.ts"
   ]
 }
