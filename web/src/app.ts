@@ -141,6 +141,9 @@ class App {
             this.chartSection.updateChart(this.categorizedMessages);
             this.tabsSection.updateStats(this.categorizedMessages);
 
+            // Update analyzed count
+            this.searchSection.updateAnalyzedCount(this.messages.length);
+
             // Switch to small tab by default
             this.switchTab('small');
 
@@ -203,7 +206,7 @@ class HeaderComponent {
 
         const version = document.createElement('p');
         version.className = 'text-white/60 text-sm mt-1';
-        version.textContent = 'version 0.1-beta';
+        version.textContent = 'version 0.3.0-beta';
 
         header.appendChild(this.profileText);
         header.appendChild(title);
@@ -222,12 +225,14 @@ class SearchSectionComponent {
     private input: HTMLInputElement;
     private button: HTMLButtonElement;
     private loadingElement: HTMLSpanElement;
+    private statusElement: HTMLDivElement;
     public onSearch?: (maxMessages: number) => void;
 
     constructor() {
         this.input = document.createElement('input');
         this.button = document.createElement('button');
         this.loadingElement = document.createElement('span');
+        this.statusElement = document.createElement('div');
         this.setupElements();
         this.setupEventListeners();
     }
@@ -240,7 +245,7 @@ class SearchSectionComponent {
         this.input.value = '20';
         this.input.className = 'input-field flex-1';
 
-        this.button.textContent = 'Classify Emails';
+        this.button.textContent = 'Analyze first 20 emails';
         this.button.className = 'btn-primary';
 
         this.loadingElement.className = 'loading inline-flex items-center gap-2';
@@ -251,13 +256,22 @@ class SearchSectionComponent {
             </svg>
             Analyzing emails...
         `;
+        this.statusElement.className = 'mt-3 text-center text-sm text-gray-600';
+        this.statusElement.textContent = 'No emails analyzed yet';
     }
 
     private setupEventListeners(): void {
+        this.input.addEventListener('input', () => {
+            const maxMessages = parseInt(this.input.value) || 20;
+            const clampedValue = Math.min(Math.max(maxMessages, 1), 50);
+            this.button.textContent = `Analyze first ${clampedValue} emails`;
+        });
+
         this.button.addEventListener('click', () => {
             const maxMessages = parseInt(this.input.value) || 20;
             const clampedValue = Math.min(Math.max(maxMessages, 1), 50);
             this.input.value = clampedValue.toString();
+            this.button.textContent = `Analyze next ${clampedValue} emails`;
             this.onSearch?.(clampedValue);
         });
     }
@@ -283,6 +297,7 @@ class SearchSectionComponent {
         inputContainer.appendChild(this.input);
         inputContainer.appendChild(this.button);
         loadingContainer.appendChild(this.loadingElement);
+        loadingContainer.appendChild(this.statusElement);
 
         container.appendChild(label);
         container.appendChild(inputContainer);
@@ -296,6 +311,14 @@ class SearchSectionComponent {
         this.loadingElement.style.display = loading ? 'inline-flex' : 'none';
         this.button.disabled = loading;
         this.input.disabled = loading;
+    }
+
+    public updateAnalyzedCount(count: number): void {
+        if (count === 0) {
+            this.statusElement.textContent = 'No emails analyzed yet';
+        } else {
+            this.statusElement.textContent = `Results from 1-${count} emails analyzed`;
+        }
     }
 }
 

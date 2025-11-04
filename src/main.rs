@@ -75,6 +75,6 @@ fn about(_: &About, cx: &mut App) {
     let _ = MessageDialog::new()
         .set_type(MessageType::Info)
         .set_title("About Gmail Cleaner")
-        .set_text(&format!("Gmail Cleaner v0.2.0-beta\n\n{}", about_text))
+        .set_text(&format!("Gmail Cleaner v0.3.0-beta\n\n{}", about_text))
         .show_alert();
 }

@@ -82,6 +82,7 @@ pub fn script() -> RawJavaScript<String> {
 #[get("/login")]
 pub fn login(cookies: &CookieJar<'_>) -> Redirect {
     cookies.remove_private("token");
+    cookies.remove_private("page_token");
     let credentials_file = include_str!("../credentials.json");
     match serde_json::from_str::<Credentials>(credentials_file) {
         Ok(credentials) => {
