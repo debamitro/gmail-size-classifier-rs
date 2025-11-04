@@ -180,11 +180,11 @@ pub async fn summary(max: String, cookies: &CookieJar<'_>) -> Json<Vec<SearchRes
     match cookies.get_private("token") {
         Some(token) => {
             let max_results: u32 = max.parse().unwrap_or(10);
-
-            match messages_list(token.value(), max_results).await {
-                Ok(messages) => {
+            let page_token = cookies.get_private("page_token").map(|c| c.value().to_string());
+            match messages_list(token.value(), max_results, page_token.as_deref()).await {
+                Ok(res) => {
                     let mut results = Vec::new();
-                    for message in messages {
+                    for message in res.messages {
                         if let Ok(msg) = message_get(token.value(), &message.id).await {
                             results.push(SearchResult {
                                 title: msg
@@ -199,6 +199,15 @@ pub async fn summary(max: String, cookies: &CookieJar<'_>) -> Json<Vec<SearchRes
                                 thread_id: msg.threadId,
                             });
                         }
+                    }
+                    // Set the next page token as a private cookie
+                    if let Some(next_token) = res.nextPageToken {
+                        let page_cookie = Cookie::build(("page_token", next_token))
+                            .same_site(SameSite::Lax);
+                        cookies.add_private(page_cookie);
+                    } else {
+                        // If no next page, remove the cookie
+                        cookies.remove_private("page_token");
                     }
                     Json(results)
                 }

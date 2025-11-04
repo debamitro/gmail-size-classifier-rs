@@ -120,23 +120,24 @@ class App {
         this.searchSection.setLoading(true);
 
         try {
-            // Clear previous results
-            this.messages = [];
-            this.categorizedMessages = { small: [], medium: [], large: [] };
-            this.tabsSection.clearAllResults();
-
             const response = await fetch(`/api/summary?max=${encodeURIComponent(maxMessages.toString())}`);
-            this.messages = await response.json();
+            const newMessages = await response.json();
 
-            // Categorize messages
+            // Append new messages to existing ones
+            this.messages.push(...newMessages);
+
+            // Re-categorize all messages
             this.categorizedMessages = {
                 small: this.messages.filter(item => item.size < 100 * 1024),
                 medium: this.messages.filter(item => item.size >= 100 * 1024 && item.size < 1024 * 1024),
                 large: this.messages.filter(item => item.size >= 1024 * 1024)
             };
 
-            // Update UI components
+            // Update tabs with all results
+            this.tabsSection.clearAllResults();
             this.tabsSection.updateResults(this.categorizedMessages);
+
+            // Update UI components
             this.chartSection.updateChart(this.categorizedMessages);
             this.tabsSection.updateStats(this.categorizedMessages);
 

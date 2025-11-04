@@ -64,21 +64,25 @@ pub struct MessagesList {
     pub resultSizeEstimate: Option<i32>,
 }
 
-pub async fn messages_list(token: &str, max_results: u32) -> Result<Vec<MessageListEntry>, ()> {
+pub async fn messages_list(token: &str, max_results: u32, page_token: Option<&str>) -> Result<MessagesList, ()> {
     let client = reqwest::Client::new();
-    let result = client
+    let mut request = client
         .get("https://gmail.googleapis.com/gmail/v1/users/me/messages")
         .header("Authorization", format!("Bearer {}", token))
-        .query(&[("maxResults", max_results)])
-        .send()
-        .await;
+        .query(&[("maxResults", max_results)]);
+
+    if let Some(token) = page_token {
+        request = request.query(&[("pageToken", token)]);
+    }
+
+    let result = request.send().await;
     match result {
         Ok(response) => match response.json::<MessagesList>().await {
-            Ok(message_list) => Ok(message_list.messages),
+            Ok(message_list) => Ok(message_list),
             Err(e) => {
                 println!("json parsing error: {}", e);
                 Err(())
-        }
+            }
         },
         Err(e) => {
             println!("request error: {}", e);
