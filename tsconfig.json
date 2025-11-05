@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
     "target": "ES2017",
-    "module": "none",
-    "outFile": "static/js/script.js",
+    "module": "es6",
+    "moduleResolution": "bundler",
+    "outDir": "static/js",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,

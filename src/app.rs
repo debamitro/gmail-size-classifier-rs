@@ -4,7 +4,9 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use tokio;
 
-use crate::server::{error, home, index, login, oauth2_callback, profile, script, summary};
+use crate::server::{error, home, index, login, oauth2_callback, profile, 
+    mainjs, appjs, headerjs, chart_sectionjs, searchjs, tab_sectionjs, utilsjs,
+    summary};
 
 fn init_handlebars() -> Handlebars<'static> {
     let mut handlebars = Handlebars::new();
@@ -45,7 +47,8 @@ impl AppState {
                     .manage(handlebars)
                     .mount(
                         "/",
-                        routes![index, summary, oauth2_callback, login, error, home, profile, script],
+                        routes![index, summary, oauth2_callback, login, error, home, profile, 
+                        mainjs, appjs, headerjs, chart_sectionjs, tab_sectionjs, searchjs, utilsjs],
                     )
                     .ignite();
                 match rocket.await {

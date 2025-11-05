@@ -73,9 +73,45 @@ pub fn home(cookies: &CookieJar<'_>, hbs: &State<Handlebars<'static>>) -> RawHtm
     }
 }
 
-#[get("/js/script.js")]
-pub fn script() -> RawJavaScript<String> {
-    let js = include_str!("../static/js/script.js");
+#[get("/js/main.js")]
+pub fn mainjs() -> RawJavaScript<String> {
+    let js = include_str!("../static/js/main.js");
+    RawJavaScript(js.to_string())
+}
+
+#[get("/js/app.js")]
+pub fn appjs() -> RawJavaScript<String> {
+    let js = include_str!("../static/js/app.js");
+    RawJavaScript(js.to_string())
+}
+
+#[get("/js/chart_section.js")]
+pub fn chart_sectionjs() -> RawJavaScript<String> {
+    let js = include_str!("../static/js/chart_section.js");
+    RawJavaScript(js.to_string())
+}
+
+#[get("/js/header.js")]
+pub fn headerjs() -> RawJavaScript<String> {
+    let js = include_str!("../static/js/header.js");
+    RawJavaScript(js.to_string())
+}
+
+#[get("/js/search.js")]
+pub fn searchjs() -> RawJavaScript<String> {
+    let js = include_str!("../static/js/search.js");
+    RawJavaScript(js.to_string())
+}
+
+#[get("/js/tab_section.js")]
+pub fn tab_sectionjs() -> RawJavaScript<String> {
+    let js = include_str!("../static/js/tab_section.js");
+    RawJavaScript(js.to_string())
+}
+
+#[get("/js/utils.js")]
+pub fn utilsjs() -> RawJavaScript<String> {
+    let js = include_str!("../static/js/utils.js");
     RawJavaScript(js.to_string())
 }
 
