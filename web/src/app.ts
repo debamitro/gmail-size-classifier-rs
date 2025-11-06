@@ -21,6 +21,8 @@ export class App {
     private searchSection: SearchSectionComponent;
     private chartSection: ChartSectionComponent;
     private tabsSection: TabsSectionComponent;
+    private chartElement: HTMLDivElement | null = null;
+    private tabsElement: HTMLDivElement | null = null;
 
     constructor() {
         this.headerComponent = new HeaderComponent();
@@ -53,7 +55,7 @@ export class App {
     private renderApp(): void {
         // Clear body and add CSS link
         document.body.innerHTML = '';
-        document.body.className = 'font-Inter -apple-system BlinkMacSystemFont SegoeUI Roboto sans-serif max-w-5xl mx-auto px-5 py-5 bg-gradient-to-br from-purple-400 to-blue-600 min-h-screen';
+        document.body.className = 'font-Inter -apple-system BlinkMacSystemFont SegoeUI Roboto sans-serif max-w-5xl mx-auto px-5 py-5 bg-gray-100 min-h-screen';
 
         // Add Chart.js script
         const chartScript = document.createElement('script');
@@ -76,7 +78,7 @@ export class App {
             .btn-primary { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
             .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15); }
             .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-            .input-field { border: 2px solid #e2e8f0; border-radius: 8px; padding: 0.75rem; font-size: 1rem; transition: border-color 0.2s; }
+            .input-field { border: 2px solid #e2e8f0; border-radius: 8px; font-size: 1rem; transition: border-color 0.2s; }
             .input-field:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
             .tab-button { padding: 1rem 1.5rem; cursor: pointer; transition: all 0.2s; border-bottom: 3px solid transparent; font-weight: 500; }
             .tab-button:hover { background: #e2e8f0; }
@@ -92,13 +94,15 @@ export class App {
         // Render components
         const headerElement = this.headerComponent.render();
         const searchElement = this.searchSection.render();
-        const chartElement = this.chartSection.render();
-        const tabsElement = this.tabsSection.render();
+        this.chartElement = this.chartSection.render();
+        this.tabsElement = this.tabsSection.render();
 
+        this.chartElement.style.display = "none";
+        this.tabsElement.style.display = "none";
         mainContainer.appendChild(headerElement);
         mainContainer.appendChild(searchElement);
-        mainContainer.appendChild(chartElement);
-        mainContainer.appendChild(tabsElement);
+        mainContainer.appendChild(this.chartElement);
+        mainContainer.appendChild(this.tabsElement);
     }
 
     private setupEventListeners(): void {
@@ -113,6 +117,13 @@ export class App {
             const response = await fetch(`/api/summary?max=${encodeURIComponent(maxMessages.toString())}`);
             const newMessages = await response.json();
 
+            if (this.chartElement) {
+                this.chartElement.style.display = "grid";
+            }
+            if (this.tabsElement) {
+                this.tabsElement.style.display = "grid";
+            }
+            
             // Append new messages to existing ones
             this.messages.push(...newMessages);
 

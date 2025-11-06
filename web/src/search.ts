@@ -55,10 +55,10 @@ export default class SearchSectionComponent {
 
     public render(): HTMLDivElement {
         const section = document.createElement('div');
-        section.className = 'search-container bg-gray-50 p-8 border-b border-gray-200';
+        section.className = 'search-container bg-gray-50 py-2 border-b border-gray-200';
 
         const container = document.createElement('div');
-        container.className = 'max-w-md mx-auto';
+        container.className = 'max-w-md mx-auto flex flex-col';
 
         const label = document.createElement('label');
         label.htmlFor = 'maxMessages';
@@ -66,18 +66,18 @@ export default class SearchSectionComponent {
         label.textContent = 'Maximum Messages to Analyze';
 
         const inputContainer = document.createElement('div');
-        inputContainer.className = 'flex gap-3';
+        inputContainer.className = 'flex gap-3 flex-row';
 
         const loadingContainer = document.createElement('div');
         loadingContainer.className = 'mt-3 text-center';
 
+        inputContainer.appendChild(label);
         inputContainer.appendChild(this.input);
-        inputContainer.appendChild(this.button);
         loadingContainer.appendChild(this.loadingElement);
         loadingContainer.appendChild(this.statusElement);
 
-        container.appendChild(label);
         container.appendChild(inputContainer);
+        container.appendChild(this.button);
         container.appendChild(loadingContainer);
         section.appendChild(container);
 
