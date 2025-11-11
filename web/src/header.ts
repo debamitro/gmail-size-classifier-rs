@@ -52,6 +52,7 @@ export default class HeaderComponent {
         // Add professional styling
         this.addStyles();
         
+        this.updateProfile(null);
         return header;
     }
 
@@ -61,20 +62,32 @@ export default class HeaderComponent {
         if (profileData) {
             this.profileContainer.innerHTML = `
                 <div class="profile-info">
-                    <div class="profile-details">
-                        <span class="profile-email">${profileData.email}</span>
+                    <div class="profile-details" style="cursor: pointer;">
+                        <div style="display: block;" id="profile-email">
+                            <span class="profile-email">${profileData.email}</span>
+                        </div>
+                        <div style="display: none;" id="profile-dropdown">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                                <polyline points="10,17 15,12 10,7"></polyline>
+                                <line x1="15" y1="12" x2="3" y2="12"></line>
+                            </svg>
+                            <a href="/login">Change Account</a>
+                        </div>
                     </div>
                 </div>`;
+            
+            // Add click event to toggle Change Account visibility
+            const profileDetails = this.profileContainer.querySelector('.profile-details') as HTMLElement;
+            profileDetails.addEventListener('click', () => {
+                const changeAccountLink = profileDetails.querySelector('#profile-dropdown') as HTMLElement;
+                changeAccountLink.style.display = changeAccountLink.style.display === 'none' ? 'block' : 'none';
+            });
         } else {
             this.profileContainer.innerHTML = `
                 <div class="sign-in-container">
                     <button class="sign-in-btn">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
-                            <polyline points="10,17 15,12 10,7"></polyline>
-                            <line x1="15" y1="12" x2="3" y2="12"></line>
-                        </svg>
-                        Signing in ...
+                        <a href="/login">Sign in</a>
                     </button>
                 </div>
             `;           

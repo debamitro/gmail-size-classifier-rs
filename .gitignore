@@ -18,3 +18,5 @@ target/
 
 credentials.json
 rocket_secret_key
+
+static/js/*.js

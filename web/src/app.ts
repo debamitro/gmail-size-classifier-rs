@@ -35,7 +35,7 @@ export class App {
     }
 
     private async initializeApp(): Promise<void> {
-        await this.loadProfile();
+        this.loadProfile();
         this.renderApp();
         this.setupEventListeners();
     }
@@ -44,7 +44,7 @@ export class App {
         try {
             const response = await fetch('/api/profile');
             this.profileData = await response.json();
-            if (this.profileData) {
+            if (this.profileData && this.profileData.email !== "") {
                 this.headerComponent.updateProfile(this.profileData);
             }
         } catch (error) {

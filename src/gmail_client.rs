@@ -64,6 +64,16 @@ pub struct MessagesList {
     pub resultSizeEstimate: Option<i32>,
 }
 
+/// Retrieves a list of messages from the user's Gmail account
+/// by calling the users.messages.list method of the Gmail API.
+///
+/// # Arguments
+/// * `token` - The access token for Gmail API authentication.
+/// * `max_results` - The maximum number of messages to return.
+/// * `page_token` - Optional token for pagination.
+///
+/// # Returns
+/// A Result containing MessagesList on success or an error on failure.
 pub async fn messages_list(token: &str, max_results: u32, page_token: Option<&str>) -> Result<MessagesList, ()> {
     let client = reqwest::Client::new();
     let mut request = client
@@ -91,6 +101,15 @@ pub async fn messages_list(token: &str, max_results: u32, page_token: Option<&st
     }
 }
 
+/// Retrieves a specific message from the user's Gmail account
+/// by calling the users.messages.get method of the Gmail API.
+///
+/// # Arguments
+/// * `token` - The access token for Gmail API authentication.
+/// * `id` - The ID of the message to retrieve.
+///
+/// # Returns
+/// A Result containing Message on success or an error on failure.
 pub async fn message_get(token: &str, id: &str) -> Result<Message, ()> {
     let client = reqwest::Client::new();
     let result = client

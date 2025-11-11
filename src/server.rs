@@ -4,6 +4,7 @@ use rocket::http::{Cookie, CookieJar, SameSite};
 use rocket::response::content::{RawHtml, RawJavaScript};
 use rocket::serde::json::serde_json;
 use rocket::{get, response::Redirect, serde::json::Json, State};
+use rocket::time::Duration;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use urlencoding;
@@ -174,6 +175,7 @@ pub async fn oauth2_callback(
                                     Ok(token_data) => {
                                         let cookie =
                                             Cookie::build(("token", token_data.access_token))
+                                                .max_age(Duration::new(token_data.expires_in as i64, 0))
                                                 .same_site(SameSite::Lax);
                                         cookies.add_private(cookie);
                                         Redirect::to("/home")
