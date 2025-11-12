@@ -1,8 +1,12 @@
 import { ProfileData } from "./types.js";
 
 export default class HeaderComponent {
+    private titleContainer: HTMLElement | null = null;
     private profileContainer: HTMLElement;
+    private aboutLink: HTMLElement | null = null;
     private profileData: ProfileData | null = null;
+    public onShowAbout?: () => void;
+    public onShowHome?: () => void;
 
     constructor() {
         this.profileContainer = document.createElement('div');
@@ -24,8 +28,8 @@ export default class HeaderComponent {
         logo.className = 'app-logo';
         logo.innerHTML = '📧'; // Gmail-like icon
         
-        const titleContainer = document.createElement('div');
-        titleContainer.className = 'title-container';
+        this.titleContainer = document.createElement('div');
+        this.titleContainer.className = 'title-container';
         
         const title = document.createElement('h1');
         title.textContent = 'Gmail Cleaner';
@@ -36,15 +40,22 @@ export default class HeaderComponent {
         subtitle.className = 'app-subtitle';
         
         logoContainer.appendChild(logo);
-        titleContainer.appendChild(title);
-        titleContainer.appendChild(subtitle);
+        this.titleContainer.appendChild(title);
+        this.titleContainer.appendChild(subtitle);
         leftSection.appendChild(logoContainer);
-        leftSection.appendChild(titleContainer);
+        leftSection.appendChild(this.titleContainer);
+        
+        // Add About link
+        this.aboutLink = document.createElement('a');
+        this.aboutLink.textContent = 'About';
+        this.aboutLink.className = 'about-link';
+        this.aboutLink.style.cursor = 'pointer';
         
         // Right section with profile
         const rightSection = document.createElement('div');
         rightSection.className = 'header-right';
         rightSection.appendChild(this.profileContainer);
+        rightSection.appendChild(this.aboutLink);
         
         header.appendChild(leftSection);
         header.appendChild(rightSection);
@@ -56,18 +67,28 @@ export default class HeaderComponent {
         return header;
     }
 
+    setupEventListeners() {
+        this.titleContainer?.addEventListener('click', () => {
+            this.onShowHome?.();
+        });
+        this.aboutLink?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.onShowAbout?.();
+        });
+    }
+
     updateProfile(profileData: ProfileData | null) {
         this.profileData = profileData;
         
         if (profileData) {
             this.profileContainer.innerHTML = `
-                <div class="profile-info">
-                    <div class="profile-details" style="cursor: pointer;">
-                        <div style="display: block;" id="profile-email">
+                <div class="profile-info text-xs">
+                    <div class="profile-details flex flex-col items-center">
+                        <div style="display: block; cursor: pointer;" id="profile-email">
                             <span class="profile-email">${profileData.email}</span>
                         </div>
-                        <div style="display: none;" id="profile-dropdown">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <div style="display: none;" class="flex-row items-center" id="profile-dropdown">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
                                 <polyline points="10,17 15,12 10,7"></polyline>
                                 <line x1="15" y1="12" x2="3" y2="12"></line>
@@ -81,7 +102,7 @@ export default class HeaderComponent {
             const profileDetails = this.profileContainer.querySelector('.profile-details') as HTMLElement;
             profileDetails.addEventListener('click', () => {
                 const changeAccountLink = profileDetails.querySelector('#profile-dropdown') as HTMLElement;
-                changeAccountLink.style.display = changeAccountLink.style.display === 'none' ? 'block' : 'none';
+                changeAccountLink.style.display = changeAccountLink.style.display === 'none' ? 'flex' : 'none';
             });
         } else {
             this.profileContainer.innerHTML = `
@@ -139,6 +160,7 @@ export default class HeaderComponent {
                 display: flex;
                 flex-direction: column;
                 gap: 0.25rem;
+                cursor: pointer;
             }
 
             .app-title {
@@ -178,56 +200,9 @@ export default class HeaderComponent {
                 border: 1px solid rgba(255, 255, 255, 0.2);
             }
 
-            .profile-details {
-                display: flex;
-                flex-direction: column;
-                align-items: flex-end;
-                gap: 0.125rem;
-            }
-
-            .profile-name {
-                font-weight: 600;
-                font-size: 0.875rem;
-                line-height: 1.2;
-            }
-
             .profile-email {
-                font-size: 0.75rem;
                 opacity: 0.8;
                 line-height: 1.2;
-            }
-
-            .profile-avatar {
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .profile-picture {
-                width: 36px;
-                height: 36px;
-                border-radius: 50%;
-                border: 2px solid rgba(255, 255, 255, 0.3);
-                object-fit: cover;
-            }
-
-            .sign-out-btn {
-                background: rgba(255, 255, 255, 0.1);
-                border: 1px solid rgba(255, 255, 255, 0.2);
-                color: white;
-                padding: 0.5rem;
-                border-radius: 8px;
-                cursor: pointer;
-                transition: all 0.2s ease;
-                backdrop-filter: blur(10px);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-
-            .sign-out-btn:hover {
-                background: rgba(255, 255, 255, 0.2);
-                transform: translateY(-1px);
             }
 
             .sign-in-container {
@@ -261,6 +236,17 @@ export default class HeaderComponent {
                 opacity: 0.7;
             }
 
+            .about-link {
+                color: white;
+                text-decoration: none;
+                margin-left: 1rem;
+                transition: opacity 0.2s;
+            }
+
+            .about-link:hover {
+                opacity: 0.8;
+            }
+
             @media (max-width: 768px) {
                 .app-header {
                     padding: 1rem;
@@ -287,10 +273,6 @@ export default class HeaderComponent {
                     flex-direction: column;
                     text-align: center;
                     padding: 0.75rem;
-                }
-
-                .profile-details {
-                    align-items: center;
                 }
             }
         `;

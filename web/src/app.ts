@@ -15,6 +15,7 @@ export class App {
         large: []
     };
     private currentTab: string = 'small';
+    private currentView: 'home' | 'about' = 'home';
 
     private rootContainer: RootContainer;
     private headerComponent: HeaderComponent;
@@ -23,6 +24,8 @@ export class App {
     private tabsSection: TabsSectionComponent;
     private chartElement: HTMLDivElement | null = null;
     private tabsElement: HTMLDivElement | null = null;
+    private homeDiv: HTMLDivElement | null = null;
+    private aboutDiv: HTMLDivElement | null = null;
 
     constructor() {
         this.headerComponent = new HeaderComponent();
@@ -99,15 +102,43 @@ export class App {
 
         this.chartElement.style.display = "none";
         this.tabsElement.style.display = "none";
+
+        // Create main content
+        const mainContent = document.createElement('div');
+        mainContent.id = 'main-content';
         mainContainer.appendChild(headerElement);
-        mainContainer.appendChild(searchElement);
-        mainContainer.appendChild(this.chartElement);
-        mainContainer.appendChild(this.tabsElement);
+        mainContainer.appendChild(mainContent);
+
+        // Create home view
+        this.homeDiv = document.createElement('div');
+        this.homeDiv.id = 'home-view';
+        mainContent.appendChild(this.homeDiv);
+        this.homeDiv.appendChild(searchElement);
+        this.homeDiv.appendChild(this.chartElement);
+        this.homeDiv.appendChild(this.tabsElement);
+
+        // Create about view
+        this.aboutDiv = document.createElement('div');
+        this.aboutDiv.id = 'about-view';
+        this.aboutDiv.style.display = 'none';
+        this.aboutDiv.innerHTML = `
+            <div class="about-container p-8">
+                <h1 class="text-3xl font-bold mb-4">About</h1>
+                <p class="mb-4">Gmail Cleaner is a desktop app which helps you find out which emails are taking up storage space in your Gmail account. This app runs on your desktop and does not send your email to any server. Therefore it is the most secure way of cleaning up your Gmail account. You don't need to give any permissions to this app, neither do you need to provide credentials. When you start it, a browser window opens up with Gmail's login page. Once Gmail authorizes you the app visually shows you what you can delete. The app does not read your email or cannot modify your Gmail account in any way.</p>
+                
+                <p class="mb-4">&copy; 2025 <a href="https://eastcoastsoft.com/products/gmail-cleaner/" target="_blank">East Coast Software LLC</a></p>
+            </div>
+        `;
+        mainContent.appendChild(this.aboutDiv);
     }
 
     private setupEventListeners(): void {
         this.searchSection.onSearch = this.performSearch.bind(this);
         this.tabsSection.onTabChange = this.switchTab.bind(this);
+        this.headerComponent.onShowAbout = this.showAbout.bind(this);
+        this.headerComponent.onShowHome = this.showHome.bind(this);
+
+        this.headerComponent.setupEventListeners();
     }
 
     private async performSearch(maxMessages: number): Promise<void> {
@@ -159,6 +190,18 @@ export class App {
     private switchTab(category: string): void {
         this.currentTab = category;
         this.tabsSection.switchToTab(category);
+    }
+
+    public showAbout(): void {
+        this.homeDiv!.style.display = 'none';
+        this.aboutDiv!.style.display = 'block';
+        this.currentView = 'about';
+    }
+
+    public showHome(): void {
+        this.aboutDiv!.style.display = 'none';
+        this.homeDiv!.style.display = 'block';
+        this.currentView = 'home';
     }
 }
 
