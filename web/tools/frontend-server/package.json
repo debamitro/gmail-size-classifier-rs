@@ -1,0 +1,14 @@
+{
+  "name": "frontend-server",
+  "version": "1.0.0",
+  "description": "A way to test the front-end",
+  "main": "index.js",
+  "scripts": {
+    "dev": "node index.js"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}
