@@ -1,6 +1,6 @@
 use handlebars::Handlebars;
 use reqwest;
-use rocket::http::{Cookie, CookieJar, SameSite};
+use rocket::http::{Cookie, CookieJar, SameSite, ContentType};
 use rocket::response::content::{RawHtml, RawJavaScript};
 use rocket::serde::json::serde_json;
 use rocket::{get, response::Redirect, serde::json::Json, State};
@@ -114,6 +114,12 @@ pub fn tab_sectionjs() -> RawJavaScript<String> {
 pub fn utilsjs() -> RawJavaScript<String> {
     let js = include_str!("../static/js/utils.js");
     RawJavaScript(js.to_string())
+}
+
+#[get("/logo_062725.png")]
+pub fn logo() -> (ContentType, &'static [u8]) {
+    let img = include_bytes!("../static/logo_062725.png");
+    (ContentType::PNG, img.as_slice())
 }
 
 #[get("/login")]

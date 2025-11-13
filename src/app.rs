@@ -5,7 +5,7 @@ use std::thread;
 use tokio;
 
 use crate::server::{error, home, index, login, oauth2_callback, profile, 
-    mainjs, appjs, headerjs, chart_sectionjs, searchjs, tab_sectionjs, utilsjs,
+    mainjs, appjs, headerjs, chart_sectionjs, searchjs, tab_sectionjs, utilsjs, logo,
     summary};
 
 fn init_handlebars() -> Handlebars<'static> {
@@ -48,7 +48,7 @@ impl AppState {
                     .mount(
                         "/",
                         routes![index, summary, oauth2_callback, login, error, home, profile, 
-                        mainjs, appjs, headerjs, chart_sectionjs, tab_sectionjs, searchjs, utilsjs],
+                        mainjs, appjs, headerjs, chart_sectionjs, tab_sectionjs, searchjs, utilsjs, logo],
                     )
                     .ignite();
                 match rocket.await {

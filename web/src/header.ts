@@ -26,7 +26,7 @@ export default class HeaderComponent {
         
         const logo = document.createElement('div');
         logo.className = 'app-logo';
-        logo.innerHTML = '📧'; // Gmail-like icon
+        logo.innerHTML = '<img src="/logo_062725.png" />';
         
         this.titleContainer = document.createElement('div');
         this.titleContainer.className = 'title-container';
