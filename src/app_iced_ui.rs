@@ -3,8 +3,8 @@ use iced::{
     widget::{button, column, container, horizontal_rule, row, text},
     Element, Subscription,
 };
-use std::time::Duration;
 use native_dialog::{MessageDialog, MessageType};
+use std::time::Duration;
 
 #[derive(Debug, Clone)]
 pub enum Message {
@@ -77,7 +77,11 @@ pub fn view(state: &GmailCleanerApp) -> Element<Message> {
             .align_x(iced::alignment::Horizontal::Right)
         ],
         button("Start")
-            .on_press_maybe(if state.app_state.is_running() { None } else { Some(Message::StartServer) })
+            .on_press_maybe(if state.app_state.is_running() {
+                None
+            } else {
+                Some(Message::StartServer)
+            })
             .style(iced::widget::button::primary),
         horizontal_rule(2),
         text(status).size(12),
@@ -96,18 +100,18 @@ pub fn view(state: &GmailCleanerApp) -> Element<Message> {
 pub fn subscription(_state: &GmailCleanerApp) -> Subscription<Message> {
     use iced::futures::{stream, StreamExt};
     use std::time::Instant;
-    
+
     Subscription::run_with_id(
         "timer",
         stream::unfold(Instant::now(), |start| async move {
             let now = Instant::now();
             let elapsed = now.duration_since(start);
-            
+
             // Sleep for the remaining time to reach 1 second
             let sleep_duration = Duration::from_secs(1).saturating_sub(elapsed);
             async_std::task::sleep(sleep_duration).await;
-            
+
             Some((Message::Tick, Instant::now()))
-        })
+        }),
     )
 }

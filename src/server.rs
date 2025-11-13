@@ -1,14 +1,14 @@
+use crate::gmail_client::*;
 use handlebars::Handlebars;
 use reqwest;
-use rocket::http::{Cookie, CookieJar, SameSite, ContentType};
+use rocket::http::{ContentType, Cookie, CookieJar, SameSite};
 use rocket::response::content::{RawHtml, RawJavaScript};
 use rocket::serde::json::serde_json;
-use rocket::{get, response::Redirect, serde::json::Json, State};
 use rocket::time::Duration;
+use rocket::{get, response::Redirect, serde::json::Json, State};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use urlencoding;
-use crate::gmail_client::*;
 
 #[derive(Serialize)]
 pub struct SearchResult {
@@ -54,9 +54,9 @@ pub fn index(cookies: &CookieJar<'_>) -> Redirect {
 pub fn home(cookies: &CookieJar<'_>, hbs: &State<Handlebars<'static>>) -> RawHtml<String> {
     match cookies.get_private("token") {
         Some(_cookie) => {
-            let html = hbs.render("index", &json!({})).unwrap_or_else(|e| {
-                format!("Template error: {}", e)
-            });
+            let html = hbs
+                .render("index", &json!({}))
+                .unwrap_or_else(|e| format!("Template error: {}", e));
             RawHtml(html)
         }
         None => {
@@ -181,7 +181,10 @@ pub async fn oauth2_callback(
                                     Ok(token_data) => {
                                         let cookie =
                                             Cookie::build(("token", token_data.access_token))
-                                                .max_age(Duration::new(token_data.expires_in as i64, 0))
+                                                .max_age(Duration::new(
+                                                    token_data.expires_in as i64,
+                                                    0,
+                                                ))
                                                 .same_site(SameSite::Lax);
                                         cookies.add_private(cookie);
                                         Redirect::to("/home")
@@ -225,7 +228,9 @@ pub async fn summary(max: String, cookies: &CookieJar<'_>) -> Json<Vec<SearchRes
     match cookies.get_private("token") {
         Some(token) => {
             let max_results: u32 = max.parse().unwrap_or(10);
-            let page_token = cookies.get_private("page_token").map(|c| c.value().to_string());
+            let page_token = cookies
+                .get_private("page_token")
+                .map(|c| c.value().to_string());
             match messages_list(token.value(), max_results, page_token.as_deref()).await {
                 Ok(res) => {
                     let mut results = Vec::new();
@@ -247,8 +252,8 @@ pub async fn summary(max: String, cookies: &CookieJar<'_>) -> Json<Vec<SearchRes
                     }
                     // Set the next page token as a private cookie
                     if let Some(next_token) = res.nextPageToken {
-                        let page_cookie = Cookie::build(("page_token", next_token))
-                            .same_site(SameSite::Lax);
+                        let page_cookie =
+                            Cookie::build(("page_token", next_token)).same_site(SameSite::Lax);
                         cookies.add_private(page_cookie);
                     } else {
                         // If no next page, remove the cookie

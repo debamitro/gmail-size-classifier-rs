@@ -1,10 +1,10 @@
 use embed_manifest::{embed_manifest, new_manifest};
 use std::fs;
 use std::process::Command;
+use swc::config::{Config, JsMinifyOptions, JscConfig, Options};
 use swc::{Compiler, JsMinifyExtras};
-use swc::config::{Options, Config, JscConfig, JsMinifyOptions};
-use swc_common::{SourceMap, sync::Lrc, GLOBALS};
 use swc_common::errors::Handler;
+use swc_common::{sync::Lrc, SourceMap, GLOBALS};
 
 fn main() {
     // Compile TypeScript
@@ -27,7 +27,10 @@ fn minify_javascript() {
 
     // Check if JavaScript file exists
     if !std::path::Path::new(js_file).exists() {
-        println!("cargo:warning=JavaScript file {} not found, skipping minification", js_file);
+        println!(
+            "cargo:warning=JavaScript file {} not found, skipping minification",
+            js_file
+        );
         return;
     }
 
@@ -49,7 +52,8 @@ fn minify_javascript() {
     // Minify the JavaScript - must run inside GLOBALS.set()
     let result = GLOBALS.set(&Default::default(), || {
         compiler.minify(
-            cm.load_file(std::path::Path::new(js_file)).expect("Failed to load file"),
+            cm.load_file(std::path::Path::new(js_file))
+                .expect("Failed to load file"),
             &handler,
             &options,
             JsMinifyExtras::default(),
@@ -73,15 +77,15 @@ fn minify_javascript() {
 
 fn compile_typescript() {
     // Run TypeScript compiler using tsconfig.json
-    match Command::new("tsc")
-        .args(&["--project", "."])
-        .status()
-    {
+    match Command::new("tsc").args(&["--project", "."]).status() {
         Ok(status) if status.success() => {
             println!("cargo:warning=TypeScript compilation successful");
         }
         Ok(status) => {
-            println!("cargo:warning=TypeScript compilation failed with exit code: {}", status);
+            println!(
+                "cargo:warning=TypeScript compilation failed with exit code: {}",
+                status
+            );
             // Don't fail the build if TypeScript compilation fails
             // The existing .js file will be used as fallback
         }

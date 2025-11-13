@@ -74,7 +74,11 @@ pub struct MessagesList {
 ///
 /// # Returns
 /// A Result containing MessagesList on success or an error on failure.
-pub async fn messages_list(token: &str, max_results: u32, page_token: Option<&str>) -> Result<MessagesList, ()> {
+pub async fn messages_list(
+    token: &str,
+    max_results: u32,
+    page_token: Option<&str>,
+) -> Result<MessagesList, ()> {
     let client = reqwest::Client::new();
     let mut request = client
         .get("https://gmail.googleapis.com/gmail/v1/users/me/messages")
