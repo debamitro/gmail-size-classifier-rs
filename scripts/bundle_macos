@@ -2,28 +2,38 @@
 
 [[ -n "$CERTIFICATE" ]] || exit
 
+dmg_name="gmail_cleaner_0.3_beta.dmg"
+if [ -n "$TARGET" ]; then
+    target_folder="target/$TARGET"
+    dmg_name="gmail_cleaner_0.3_beta-$TARGET.dmg"
+    target_args="--target $TARGET"
+else
+    target_folder="target/"
+    target_args=""
+fi
+
 # 1 Bundle
-cargo bundle --release --features iced_ui
+cargo bundle --release --features iced_ui $target_args
 
 # 2 Codesign
-codesign --options runtime --force -s ${CERTIFICATE} target/release/bundle/osx/Gmail\ Cleaner.app
+codesign --options runtime --force -s "${CERTIFICATE}" $target_folder/release/bundle/osx/Gmail\ Cleaner.app
 
 # 3 Create dmg
 mkdir tmp.$$
 mkdir tmp.$$/Gmail\ Cleaner
-cp -r target/release/bundle/osx/Gmail\ Cleaner.app tmp.$$/Gmail\ Cleaner
-hdiutil create -verbose -srcfolder tmp.$$/Gmail\ Cleaner -format UDZO -ov ./gmail_cleaner_0.2_beta.dmg
+cp -r $target_folder/release/bundle/osx/Gmail\ Cleaner.app tmp.$$/Gmail\ Cleaner
+hdiutil create -verbose -srcfolder tmp.$$/Gmail\ Cleaner -format UDZO -ov $dmg_name
 rm -fr tmp.$$
 
 # 4 Codesign the dmg
-codesign -s ${CERTIFICATE} ./gmail_cleaner_0.2_beta.dmg 
+codesign -s "$CERTIFICATE" $dmg_name 
 
 [[ -n "$APPLE_ID" ]] || exit
 [[ -n "$APP_PASSWORD" ]] || exit
 [[ -n "$TEAM_ID" ]] || exit
 
 # 5 Submit for notarization
-xcrun notarytool submit ./gmail_cleaner_0.2_beta.dmg --wait --apple-id ${APPLE_ID} --password ${APP_PASSWORD} --team-id ${TEAM_ID}
+xcrun notarytool submit $dmg_name --wait --apple-id ${APPLE_ID} --password ${APP_PASSWORD} --team-id ${TEAM_ID}
 
 # 6 Staple the dmg
-xcrun stapler staple ./gmail_cleaner_0.2_beta.dmg
+xcrun stapler staple $dmg_name

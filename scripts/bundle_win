@@ -1,10 +1,11 @@
 #!/bin/bash
 
+cargo build --release --features iced_ui --target x86_64-pc-windows-gnu
+
 mkdir tmp.$$
 cp target/x86_64-pc-windows-gnu/release/gmail-cleaner-rs.exe tmp.$$
-cp -r templates tmp.$$
 cd tmp.$$
-zip -r ../gmail_cleaner_0.2_beta_win.zip *
+zip -r ../gmail_cleaner_0.3_beta_win.zip *
 cd ..
 rm -rf tmp.$$
 
