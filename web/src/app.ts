@@ -75,8 +75,9 @@ export class App {
         const style = document.createElement('style');
         style.textContent = `
             .message-card { background: white; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem; margin-bottom: 0.75rem; transition: all 0.2s; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1); }
+            .message-card .flex { padding-right: 1rem; }
             .message-card:hover { box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); transform: translateY(-1px); }
-            .size-badge { background: #3b82f6; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+            .size-badge { background: #3b82f6; color: white; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; margin-left: 0.5rem; }
             .loading { display: none; color: #64748b; }
             .btn-primary { background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
             .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15); }
@@ -212,7 +213,7 @@ export class App {
 class RootContainer {
     public render(): HTMLDivElement {
         const container = document.createElement('div');
-        container.className = 'main-container bg-white rounded-2xl shadow-2xl overflow-hidden';
+        container.className = 'main-container bg-white rounded-2xl shadow-2xl';
         return container;
     }
 }

@@ -59,7 +59,7 @@ export default class TabsSectionComponent {
             size.textContent = 'Total size: 0 KB';
 
             const results = document.createElement('div');
-            results.className = 'space-y-3';
+            results.className = 'space-y-3 pr-2';
             results.id = `${category}-results`;
 
             stats.appendChild(count);
